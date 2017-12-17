@@ -40,7 +40,6 @@ void main() {
 })";
 
 
-
 xr::Renderer::Renderer()
 	: shader(vertexSource, fragmentSource)
 {
@@ -58,68 +57,18 @@ void xr::Renderer::clear(float r, float g, float b, float a)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void xr::Renderer::submit(const RendererSequence & sequence)
+void xr::Renderer::submit(const RenderBatch & batch)
 {
-	int paramOffset = 0;
-	// Returns the value of the next parameter
-	auto getNextParam = [&]() {
-		return sequence.parameters[paramOffset++];
-	};
-
-	// Points to the current mesh
-	int meshOffset = 0;
-
-	// Points to the current index of a mesh
-	std::vector<int> indexOffsets(sequence.meshes.size(), 0);
-
-	// Points to the next camera
-	int cameraOffset = 0;
-
-	// Points to the next camera
-	int textureOffset = 0;
-
 	this->shader.use();
-	for each (auto command in sequence.commands)
-	{
-		if (command == DRAW_INDICES) {
-			// Get the number of indices to draw
-			int indexCount = getNextParam();
+	for (auto& texturePair : batch.textureBatches) {
+		texturePair.first.bind();
+		for (auto& transBatch: texturePair.second.transBatches) {
+			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, glm::value_ptr(transBatch.transformation));
 
-			// Get the current index offset
-			int& indexOffset = indexOffsets[meshOffset];
+			this->vertexBuffer.upload(transBatch.mesh.vertices);
+			this->vertexBuffer.upload(transBatch.mesh.indices);
 
-			// Draw indices
-			this->vertexBuffer.drawElements(indexCount, indexOffset);
-
-			// Move index pointer
-			indexOffset += indexCount;
-		} else 
-		if (command == NEXT_CAMERA) {
-			// Get the next camera
-			const float* cameraMatrix = glm::value_ptr(sequence.cameraMatrices[cameraOffset++]);
-
-			// Upload the camera
-			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, GL_FALSE, cameraMatrix);
-		} else
-		if (command == NEXT_TEXTURE) {
-			// Get the next texture
-			const Texture& texture = sequence.textures[textureOffset++];
-
-			// Activate the texture
-			glActiveTexture(GL_TEXTURE0);
-			texture.bind();
-			glUniform1i(this->uniformLocations.texture0, 0);
-		} else
-		if (command == SWITCH_MESH) {
-			// Get the next mesh
-			int meshIndex = getNextParam();
-			const Mesh& mesh = sequence.meshes[meshIndex];
-
-			// Upload mesh data
-			this->vertexBuffer.upload(mesh.vertices);
-			this->vertexBuffer.upload(mesh.indices);
+			this->vertexBuffer.drawElements(transBatch.mesh.indices.size(), 0);
 		}
 	}
-
-	Texture::unbind();
 }

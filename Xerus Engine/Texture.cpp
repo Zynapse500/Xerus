@@ -21,6 +21,11 @@ xr::Texture::Texture(const Image & image)
 {
 }
 
+xr::Texture::Texture()
+	: texture(-1)
+{
+}
+
 void xr::Texture::bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, this->texture);

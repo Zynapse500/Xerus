@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Vertex.h"
 
 namespace xr{
 	// Represents a list of indexed vertices

@@ -17,6 +17,10 @@ namespace xr {
 		Texture(int width, int height, GLenum format = GL_RGBA, const unsigned char* data = nullptr);
 		Texture(const Image& image);
 
+		// Placeholder texture
+		Texture();
+
+
 		// Bind this texture
 		void bind() const;
 

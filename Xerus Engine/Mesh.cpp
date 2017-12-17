@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "Vertex.h"
 
 #include "Mesh.h"
 

@@ -49,7 +49,7 @@ int main() {
 
 		xr::Window window(512, 512, "Xerus Engine", prefs);
 		xr::Renderer renderer;
-		xr::DrawBuffer drawBuffer(true);
+		xr::RenderBatch renderBatch;
 
 		xr::Texture texture(atlas);
 		texture.setMinMagFilter(GL_NEAREST, GL_NEAREST);
@@ -72,7 +72,7 @@ int main() {
 			renderer.clear(0.2f, 0.2f, 0.2f, 1.0f);
 
 			// Clear previous commands
-			drawBuffer.clear();
+			renderBatch.clear();
 
 			// Set the current camera
 			glm::mat4 view = glm::lookAt(2.5f * glm::vec3{ cos(elapsed / 2), 0.5, sin(elapsed / 2) }, { 0, 0, 0 }, { 0, 1, 0 });
@@ -83,40 +83,50 @@ int main() {
 
 			proj = glm::ortho(0.0f, w, 0.0f, h);
 
-			drawBuffer.setCameraMatrix(proj);
+			renderBatch.setCameraMatrix(proj);
 
 			
 			// Set the current texture
-			drawBuffer.setTexture(*currentRegion);
+			renderBatch.setTexture(*currentRegion);
 			
 			// Interpolate
-			float tileSize = 32;
 			float t = (elapsed - animationStart);
 
 			float d = 2;
 
 			// Go from 0 to 1 in in 'd' seconds
-			float p = fmod(t, d) / d;
+			auto p = [d](float t) {
+				float p = fmod(t, d) / d;
 
-			// Reverse direction at half time
-			if (p < 0.5) {
-				p = 2 * p;
+				// Reverse direction at half time
+				if (p < 0.5) {
+					p = 2 * p;
+				}
+				else {
+					p = 2 - 2 * p;
+				}
+
+				return p;
+			};
+
+
+			float tileSize = 16;
+			int tileCount = 100000;
+			for (int i = 0; i < tileCount; i++)
+			{
+				float xOffset = d * i / 2 / tileCount;
+				float yOffset = xOffset + d / 3;
+
+				float x = xr::smootherLerp(p(t + xOffset), 0.f, w - tileSize);
+				float y = xr::smootherLerp(p(t + yOffset), 0.f, h - tileSize);
+
+				// Draw textured quad
+				renderBatch.drawRect(x, y, tileSize, tileSize);
 			}
-			else {
-				p = 2 - 2 * p;
-			}
 
-			float x = xr::smootherLerp(p, 0.f, w - tileSize);
-
-
-			// Draw textured quad
-			drawBuffer.drawRect(x, h / 2 - tileSize / 2, tileSize, tileSize);
 			
-			// Encode a render sequence
-			const xr::RendererSequence& sequence = drawBuffer.encodeSequence();
-
 			// Submit drawBuffer to renderer
-			renderer.submit(sequence);
+			renderer.submit(renderBatch);
 
 			window.swapBuffers();
 		};
@@ -152,16 +162,13 @@ int main() {
 		};
 
 		keyPressed = [&](int key) {
-			std::cout << "Pressed: " << (char)key << std::endl;
-
 			if (key == GLFW_KEY_R) {
 				animationStart = elapsed;
 			} else if (key == GLFW_KEY_ESCAPE) {
 				window.close();
 			}
-			else if (key = GLFW_KEY_F11) {
-				static bool fullscreen = false;
-				window.setFullscreen(fullscreen = !fullscreen);
+			else if (key == GLFW_KEY_F11) {
+				window.toggleFullscreen();
 			}
 		};
 
@@ -188,12 +195,10 @@ void onKeyPressed(int key) {
 }
 
 void onKeyReleased(int key) {
-	std::cout << "Released: " << (char)key << std::endl;
 }
 
 void onWindowResize(int width, int height)
 {
-	// printf("Size: (%d, %d)\n", width, height);
 }
 
 void onWindowRefresh()

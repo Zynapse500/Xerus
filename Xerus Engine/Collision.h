@@ -2,6 +2,23 @@
 
 
 namespace xr {
+
+	template <class T>
+	bool rangeIntersects(T aMin, T aMax, T bMin, T bMax) {
+		return aMin < bMax && aMax > bMin;
+	}
+
+
+	template <class T> 
+	struct Range {
+		T lower, upper;
+
+		Range(T lower, T upper)
+			: lower(lower), upper(upper) {}
+	};
+
+
+
 	template <class T>
 	struct Rectangle {
 		T x, y;
