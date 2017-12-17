@@ -23,6 +23,7 @@
     <ClInclude Include="DrawBuffer.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Interpolation.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="OpenGL.h" />
     <ClInclude Include="picopng\picopng.h" />
     <ClInclude Include="Renderer.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="DrawBuffer.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="OpenGL.cpp" />
     <ClCompile Include="picopng\picopng.cpp" />
     <ClCompile Include="Renderer.cpp" />

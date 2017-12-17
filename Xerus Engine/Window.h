@@ -24,12 +24,27 @@ namespace xr {
 	
 	// Preferences for creating a window
 	struct WindowPreferences {
+		// Determines if vertical sync is enabled
 		bool vsync = true;
+
+		// The number of multisampling samples
 		int samples = 0;
 
+		// Determines if window is opened in fullscreen mode
+		bool fullscreen = false;
+
+		// Determines the window size be overriden to the monitor's
+		// resolution if fullscreen is enabled
+		bool overrideFullscrenSize = true;
+
+
+		// The OpenGL context version
 		int contextVersionMajor = 3;
+		// The OpenGL context version
 		int contextVersionMinor = 3;
 
+
+		// The callbacks of the window
 		WindowCallbacks callbacks;
 	};
 
@@ -45,14 +60,33 @@ namespace xr {
 		// This size of this window
 		glm::ivec2 size;
 
+		// The preferred size of the window
+		glm::ivec2 preferredSize;
+
+
+		// False if window is in windowed mode, true if in fullscreen
+		bool fullscreen;
+
+		// Should fullscreen use monitor's full resolution
+		bool fullscreenUseMaxResolution;
+
+		// The preferred monitor for this window
+		GLFWmonitor* preferredMonitor;
+
 	public:
 
 		// Create a window
 		Window(int width, int height, const char* title, const WindowPreferences& preferences = WindowPreferences());
 
+		// Destroy this window
+		~Window();
+
 
 		// Return true if the window is currently open
 		bool isOpen();
+
+		// Close this window
+		void close();
 
 
 		// Poll the window for events
@@ -78,6 +112,14 @@ namespace xr {
 
 		// Sets this window's title
 		void setTitle(const char* title);
+
+
+		// Makes this window fullscreen if true, windowed if false
+		void setFullscreen(bool fullscreen);
+		void toggleFullscreen();
+
+		// Return false if this window is in windowed mode, true if in fullscreen
+		bool getFullscreen();
 
 	private:
 

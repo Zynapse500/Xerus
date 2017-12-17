@@ -61,35 +61,65 @@ void xr::Renderer::clear(float r, float g, float b, float a)
 void xr::Renderer::submit(const RendererSequence & sequence)
 {
 	int paramOffset = 0;
-	int indexOffset = 0;
+	// Returns the value of the next parameter
+	auto getNextParam = [&]() {
+		return sequence.parameters[paramOffset++];
+	};
 
+	// Points to the current mesh
+	int meshOffset = 0;
+
+	// Points to the current index of a mesh
+	std::vector<int> indexOffsets(sequence.meshes.size(), 0);
+
+	// Points to the next camera
 	int cameraOffset = 0;
-	int textureOffset = 0;
 
-	this->vertexBuffer.upload(sequence.vertices);
-	this->vertexBuffer.upload(sequence.indices);
+	// Points to the next camera
+	int textureOffset = 0;
 
 	this->shader.use();
 	for each (auto command in sequence.commands)
 	{
 		if (command == DRAW_INDICES) {
-			int indexCount = sequence.parameters[paramOffset++];
+			// Get the number of indices to draw
+			int indexCount = getNextParam();
+
+			// Get the current index offset
+			int& indexOffset = indexOffsets[meshOffset];
+
+			// Draw indices
 			this->vertexBuffer.drawElements(indexCount, indexOffset);
+
+			// Move index pointer
 			indexOffset += indexCount;
 		} else 
 		if (command == NEXT_CAMERA) {
-			const float* cameraMatrix = glm::value_ptr(sequence.cameraMatrices[cameraOffset]);
+			// Get the next camera
+			const float* cameraMatrix = glm::value_ptr(sequence.cameraMatrices[cameraOffset++]);
+
+			// Upload the camera
 			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, GL_FALSE, cameraMatrix);
-			cameraOffset++;
 		} else
 		if (command == NEXT_TEXTURE) {
+			// Get the next texture
 			const Texture& texture = sequence.textures[textureOffset++];
+
+			// Activate the texture
 			glActiveTexture(GL_TEXTURE0);
 			texture.bind();
 			glUniform1i(this->uniformLocations.texture0, 0);
+		} else
+		if (command == SWITCH_MESH) {
+			// Get the next mesh
+			int meshIndex = getNextParam();
+			const Mesh& mesh = sequence.meshes[meshIndex];
+
+			// Upload mesh data
+			this->vertexBuffer.upload(mesh.vertices);
+			this->vertexBuffer.upload(mesh.indices);
 		}
 	}
 
 	Texture::unbind();
 }
-

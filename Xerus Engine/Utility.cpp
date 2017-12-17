@@ -12,11 +12,11 @@ std::vector<unsigned char> xr::util::loadBytes(const char * path)
 
 	if (file.is_open()) {
 		// Get the number of bytes in the file
-		size_t size = file.tellg();
+		std::streamoff size = file.tellg();
 		file.seekg(0);
 
 		// Resize buffer to fit file
-		buffer.resize(size);
+		buffer.resize(unsigned(size));
 
 		// Map the file into memory
 		file.read((char*)buffer.data(), size);

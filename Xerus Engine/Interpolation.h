@@ -34,10 +34,18 @@ namespace xr {
 
 	// Cubically interpolate between two points
 	template <class T, class P>
-	P cubiclerp(const T& t, const P& p1, const P& p2) {
-		T x = clamp(t, 0, 1);
+	P smoothLerp(const T& t, const P& p1, const P& p2) {
+		T x = clamp(t, T(0), T(1));
 
-		return lerp(-2.*x*x*x + 3.*x*x, p1, p2);
+		return lerp(x*x * (3. - 2.*x), p1, p2);
+	}
+
+	// Cubically interpolate between two points
+	template <class T, class P>
+	P smootherLerp(const T& t, const P& p1, const P& p2) {
+		T x = clamp(t, T(0), T(1));
+
+		return lerp(x*x*x * (x * (6.*x - 15.) + 10.), p1, p2);
 	}
 
 

@@ -38,7 +38,13 @@ void xr::DrawBuffer::setTexture(const Texture & texture, const Rectangle<float>&
 	if (this->sequence.textures.size() == 0 || this->sequence.textures.back() != texture) {
 		this->sequence.commands.push_back(NEXT_TEXTURE);
 		this->sequence.textures.push_back(texture);
+
+		// Add a new mesh for this texture
+		this->sequence.commands.emplace_back(SWITCH_MESH);
+		this->sequence.parameters.emplace_back(this->sequence.meshes.size());
+		this->sequence.meshes.emplace_back();
 	}
+
 	this->currentTextureRegion = region;
 }
 
@@ -62,32 +68,42 @@ void xr::DrawBuffer::drawRect(float x, float y, float z, float w, float h)
 		this->sequence.parameters.push_back(0);
 	}
 
+	// Get the current mesh
+	Mesh& currentMesh = this->getCurrentMesh();
+
 	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->sequence.vertices.size();
+	int startIndex = currentMesh.vertices.size();
 
 	// Add indices to all vertices
-	this->sequence.indices.emplace_back(0 + startIndex);
-	this->sequence.indices.emplace_back(1 + startIndex);
-	this->sequence.indices.emplace_back(2 + startIndex);
-	this->sequence.indices.emplace_back(2 + startIndex);
-	this->sequence.indices.emplace_back(3 + startIndex);
-	this->sequence.indices.emplace_back(0 + startIndex);
+	currentMesh.indices.emplace_back(0 + startIndex);
+	currentMesh.indices.emplace_back(1 + startIndex);
+	currentMesh.indices.emplace_back(2 + startIndex);
+	currentMesh.indices.emplace_back(2 + startIndex);
+	currentMesh.indices.emplace_back(3 + startIndex);
+	currentMesh.indices.emplace_back(0 + startIndex);
 
 	// Save the number of additional indices
 	this->sequence.parameters.back() += 6;
 
+	// Provide alias for 'currentTextureRegion'
 	auto& r = this->currentTextureRegion;
 
 	// Add vertices
-	this->sequence.vertices.emplace_back(glm::vec3{ x, y, z },			glm::vec2{ r.x, r.y + r.height },			this->fillColor);
-	this->sequence.vertices.emplace_back(glm::vec3{ x, y + h, z },		glm::vec2{ r.x, r.y },						this->fillColor);
-	this->sequence.vertices.emplace_back(glm::vec3{ x + w, y + h, z },	glm::vec2{ r.x + r.width, r.y },			this->fillColor);
-	this->sequence.vertices.emplace_back(glm::vec3{ x + w, y, z },		glm::vec2{ r.x + r.width, r.y + r.height }, this->fillColor);
+	currentMesh.vertices.emplace_back(glm::vec3{ x, y, z },			glm::vec2{ r.x, r.y + r.height },			this->fillColor);
+	currentMesh.vertices.emplace_back(glm::vec3{ x, y + h, z },		glm::vec2{ r.x, r.y },						this->fillColor);
+	currentMesh.vertices.emplace_back(glm::vec3{ x + w, y + h, z },	glm::vec2{ r.x + r.width, r.y },			this->fillColor);
+	currentMesh.vertices.emplace_back(glm::vec3{ x + w, y, z },		glm::vec2{ r.x + r.width, r.y + r.height }, this->fillColor);
 }
 
 const xr::RendererSequence & xr::DrawBuffer::encodeSequence()
 {
 	return this->sequence;
+}
+
+
+xr::Mesh & xr::DrawBuffer::getCurrentMesh()
+{
+	return this->sequence.meshes.back();
 }
 
 //

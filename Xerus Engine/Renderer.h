@@ -4,17 +4,22 @@
 #include "Buffer.h"
 #include "Texture.h"
 
+#include "Mesh.h"
+
 namespace xr {
 	
 	enum RendererCommand {
-		// Draws the next n indices {n}
+		// Draws the next n indices of current mesh {n}
 		DRAW_INDICES,
 
 		// Switches to the next camera matrix
 		NEXT_CAMERA,
 
 		// Switches to the next texture
-		NEXT_TEXTURE
+		NEXT_TEXTURE,
+
+		// Switches to another mesh {index}
+		SWITCH_MESH
 	};
 
 	struct RendererSequence {
@@ -24,9 +29,12 @@ namespace xr {
 		// Parameters of the commands
 		std::vector<int> parameters;
 
+		// List of Meshes
+		std::vector<Mesh> meshes;
+
 		// Vertex and index data
-		std::vector<Vertex> vertices;
-		std::vector<GLuint> indices;
+		//std::vector<Vertex> vertices;
+		//std::vector<GLuint> indices;
 
 		// Camera matrices
 		std::vector<glm::mat4> cameraMatrices;
@@ -38,8 +46,7 @@ namespace xr {
 		void clear() {
 			commands.clear();
 			parameters.clear();
-			vertices.clear();
-			indices.clear();
+			meshes.clear();
 			cameraMatrices.clear();
 			textures.clear();
 		}

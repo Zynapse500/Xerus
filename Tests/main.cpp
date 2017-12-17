@@ -11,6 +11,13 @@ void onWindowRefresh();
 
 std::function<void()> render;
 std::function<void(double)> update;
+std::function<void(int)> keyPressed;
+
+
+// Time since program start
+double elapsed = 0;
+
+double animationStart = 0;
 
 int main() {
 	try
@@ -18,9 +25,10 @@ int main() {
 		xr::WindowPreferences prefs;
 		prefs.contextVersionMajor = 3;
 		prefs.contextVersionMinor = 3;
-
+		
 		prefs.vsync = false;
 		prefs.samples = 8;
+		prefs.fullscreen = false;
 
 		prefs.callbacks.keyPressedCallback = onKeyPressed;
 		prefs.callbacks.keyReleasedCallback = onKeyReleased;
@@ -28,7 +36,7 @@ int main() {
 		prefs.callbacks.windowRefreshedCallback = onWindowRefresh;
 
 
-		// Load image from disk and create texture
+		// Load image from disk and create texture atlas
 		xr::Image dirt("resources/dirt.png");
 		xr::Image stone("resources/stone.png");
 		xr::Image atlas;
@@ -55,8 +63,6 @@ int main() {
 		// Current texture region to draw
 		xr::TextureRegion* currentRegion = &textureRegions.front();
 
-		// Time since program start
-		double elapsed = 0;
 
 		int tileCount = 0;
 
@@ -73,7 +79,7 @@ int main() {
 			float w = (float)window.getWidth();
 			float h = (float)window.getHeight();
 
-			glm::mat4 proj = glm::perspective(glm::radians(70.f), w / h, 0.1f, 100.f);
+			glm::mat4 proj = glm::perspective(glm::radians(70.f), h == 0 ? 0 : w / h, 0.1f, 100.f);
 
 			proj = glm::ortho(0.0f, w, 0.0f, h);
 
@@ -82,33 +88,34 @@ int main() {
 			
 			// Set the current texture
 			drawBuffer.setTexture(*currentRegion);
+			
+			// Interpolate
+			float tileSize = 32;
+			float t = (elapsed - animationStart);
 
-			// Set the color
-			// drawBuffer.setFillColor(float(sin(elapsed)) / 2.f + 0.5f, 0.2f, float(cos(elapsed)) / 2.f + 0.5f);
+			float d = 2;
+
+			// Go from 0 to 1 in in 'd' seconds
+			float p = fmod(t, d) / d;
+
+			// Reverse direction at half time
+			if (p < 0.5) {
+				p = 2 * p;
+			}
+			else {
+				p = 2 - 2 * p;
+			}
+
+			float x = xr::smootherLerp(p, 0.f, w - tileSize);
+
 
 			// Draw textured quad
-
-			// drawBuffer.drawRect(0.0f, 0.0f, w, h);
-			tileCount = 0;
-			int textureRegionCount = textureRegions.size();
-			int tileSize = 16;
-
-			srand(1337);
-			for (float x = 0; x < w; x += tileSize)
-			{
-				for (int y = 0; y < h; y += tileSize)
-				{
-					tileCount++;
-					drawBuffer.setTexture(textureRegions[rand() % textureRegionCount]);
-					drawBuffer.drawRect(x, y, tileSize, tileSize);
-				}
-			}
+			drawBuffer.drawRect(x, h / 2 - tileSize / 2, tileSize, tileSize);
 			
-
 			// Encode a render sequence
 			const xr::RendererSequence& sequence = drawBuffer.encodeSequence();
 
-			// Submit render sequence to renderer
+			// Submit drawBuffer to renderer
 			renderer.submit(sequence);
 
 			window.swapBuffers();
@@ -116,7 +123,7 @@ int main() {
 
 		update = [&](double deltaTime) {
 			elapsed += deltaTime;
-
+			
 			// Calculate framerate
 			{
 				static double elapsedTime = 0;
@@ -128,7 +135,8 @@ int main() {
 					int fps = int(round(frames / elapsedTime));
 					frames = 0; elapsedTime = 0;
 
-					window.setTitle(("Xerus Engine @ " + std::to_string(fps) + " : " + std::to_string(tileCount)).c_str());
+					printf("fps: %d\n", fps);
+					// window.setTitle(("Xerus Engine @ " + std::to_string(fps) + " : " + std::to_string(tileCount)).c_str());
 				}
 			}
 
@@ -143,6 +151,19 @@ int main() {
 			}
 		};
 
+		keyPressed = [&](int key) {
+			std::cout << "Pressed: " << (char)key << std::endl;
+
+			if (key == GLFW_KEY_R) {
+				animationStart = elapsed;
+			} else if (key == GLFW_KEY_ESCAPE) {
+				window.close();
+			}
+			else if (key = GLFW_KEY_F11) {
+				static bool fullscreen = false;
+				window.setFullscreen(fullscreen = !fullscreen);
+			}
+		};
 
 		// Main loop
 		while (window.isOpen()) {
@@ -163,7 +184,7 @@ int main() {
 }
 
 void onKeyPressed(int key) {
-	std::cout << "Pressed: " << (char)key << std::endl;
+	keyPressed(key);
 }
 
 void onKeyReleased(int key) {

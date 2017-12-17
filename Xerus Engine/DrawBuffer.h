@@ -14,6 +14,12 @@ namespace xr {
 		// The render sequence to construct
 		RendererSequence sequence;
 
+
+		// Map of all textures and the index to their meshes
+		std::map<Texture, int> textureBatches;
+
+
+
 		// The default, all white, texture
 		Texture defaultTexture;
 		
@@ -64,6 +70,12 @@ namespace xr {
 
 		// Encode objects into a rendering sequence
 		const RendererSequence& encodeSequence();
+
+
+	private:
+
+		// Return the mesh that's currently being built
+		Mesh& getCurrentMesh();
 
 	};
 }

@@ -11,9 +11,19 @@ xr::Window::Window(int width, int height, const char * title, const WindowPrefer
 	this->setup(preferences);
 }
 
+xr::Window::~Window()
+{
+	glfwTerminate();
+}
+
 bool xr::Window::isOpen()
 {
 	return !glfwWindowShouldClose(this->glfwHandle);
+}
+
+void xr::Window::close()
+{
+	glfwSetWindowShouldClose(this->glfwHandle, true);
 }
 
 void xr::Window::pollEvents()
@@ -67,6 +77,47 @@ void xr::Window::setTitle(const char * title)
 }
 
 
+void xr::Window::setFullscreen(bool fullscreen)
+{
+	this->fullscreen = fullscreen;
+
+	// Size, position and monitor to use for fullscreen
+	int width = this->preferredSize.x, height = this->preferredSize.y;
+	int x = 0, y = 0;
+	GLFWmonitor* monitor = nullptr;
+	
+	// Info about the preferred monitor
+	const GLFWvidmode* vidmode = glfwGetVideoMode(this->preferredMonitor);
+
+	if (fullscreen) {
+		// Find the monitor's size
+		if (this->fullscreenUseMaxResolution) {
+			width = vidmode->width;
+			height = vidmode->height;
+		}
+
+		monitor = this->preferredMonitor;
+	}
+	else {
+		// Center window on monitor
+		glfwGetMonitorPos(this->preferredMonitor, &x, &y);
+		x += (vidmode->width - width) / 2;
+		y += (vidmode->height - height) / 2;
+	}
+
+	glfwSetWindowMonitor(this->glfwHandle, monitor, x, y, width, height, GLFW_DONT_CARE);
+}
+
+void xr::Window::toggleFullscreen()
+{
+	this->setFullscreen(!this->fullscreen);
+}
+
+bool xr::Window::getFullscreen()
+{
+	return this->fullscreen;
+}
+
 void xr::Window::initGLFW()
 {
 	static bool initialized = false;
@@ -81,6 +132,11 @@ void xr::Window::initGLFW()
 
 void xr::Window::create(int width, int height, const char * title, const WindowPreferences& preferences)
 {
+	// Set the preferred monitor for the window
+	this->preferredMonitor = glfwGetPrimaryMonitor();
+	this->fullscreenUseMaxResolution = preferences.overrideFullscrenSize;
+	this->preferredSize = { width, height };
+
 	// Set OpenGL version
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, preferences.contextVersionMajor);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, preferences.contextVersionMinor);
@@ -88,7 +144,24 @@ void xr::Window::create(int width, int height, const char * title, const WindowP
 	// Multisampling samples
 	glfwWindowHint(GLFW_SAMPLES, preferences.samples);
 
-	this->glfwHandle = glfwCreateWindow(width, height, title, nullptr, nullptr);
+	// The monitor of the window
+	GLFWmonitor* monitor = nullptr;
+
+	// Fullscreen or not
+	if (preferences.fullscreen) {
+		// Get the main monitor
+		monitor = this->preferredMonitor;
+
+		// Change the window size if necessary
+		if (preferences.overrideFullscrenSize) {
+			// Get the monitor resolution
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+			width = mode->width;
+			height = mode->height;
+		}
+	}
+	
+	this->glfwHandle = glfwCreateWindow(width, height, title, monitor, nullptr);
 
 	if (!glfwHandle) {
 		throw std::runtime_error("Failed to create GLFW window");
