@@ -106,6 +106,8 @@ void xr::Window::setFullscreen(bool fullscreen)
 	}
 
 	glfwSetWindowMonitor(this->glfwHandle, monitor, x, y, width, height, GLFW_DONT_CARE);
+
+	glfwSwapInterval(this->verticalSync);
 }
 
 void xr::Window::toggleFullscreen()
@@ -188,6 +190,7 @@ void xr::Window::setup(WindowPreferences preferences)
 
 	// Vertical sync
 	glfwSwapInterval(preferences.vsync);
+	this->verticalSync = preferences.vsync;
 
 	// Enable multisampling
 	if (preferences.samples > 0) {

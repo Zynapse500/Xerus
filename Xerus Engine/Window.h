@@ -64,6 +64,9 @@ namespace xr {
 		glm::ivec2 preferredSize;
 
 
+		// Should vsync be enabled?
+		bool verticalSync;
+
 		// False if window is in windowed mode, true if in fullscreen
 		bool fullscreen;
 

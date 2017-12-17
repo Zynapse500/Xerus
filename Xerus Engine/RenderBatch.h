@@ -9,13 +9,13 @@ namespace xr {
 	// Threadsafe render buffer
 	class RenderBatch {
 		friend class Renderer;
-		
-		
+
+
 
 		struct TransformationBatch {
 			glm::mat4 transformation;
 
-			Mesh mesh;
+			Range<int> indexRange;
 
 			TransformationBatch(glm::mat4 transformation) :
 				transformation(transformation) {}
@@ -26,7 +26,12 @@ namespace xr {
 		};
 
 
-		
+		// List of meshes
+		Mesh meshBuffer;
+
+		// Pointer to the current index range
+		Range<int>* currentIndexRange;
+
 		// Texture batches
 		std::map<Texture, TextureBatch> textureBatches;
 
@@ -36,7 +41,7 @@ namespace xr {
 		// Current transformation matrix
 		glm::mat4 currentTransformation;
 
-		// Current texture
+		// Current texture batch
 		TextureBatch* currentTextureBatch;
 
 
@@ -45,9 +50,6 @@ namespace xr {
 
 		// The region of the current texture to use
 		Rectangle<float> currentTextureRegion;
-
-		// The current mesh
-		Mesh* currentMesh;
 
 	public:
 
@@ -78,10 +80,13 @@ namespace xr {
 		void drawRect(glm::vec2 pos, glm::vec2 size) { drawRect(pos.x, pos.y, size.x, size.y); }
 
 	private:
-		
+
 		// Stops rendering with a texture
 		// In reality it switches to an all white texture
 		void clearTexture();
+
+
+		// Adds a transformation
 	};
 
 }

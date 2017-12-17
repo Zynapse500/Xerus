@@ -12,6 +12,9 @@ void xr::RenderBatch::clear()
 {
 	this->textureBatches.clear();
 
+	this->meshBuffer.vertices.clear();
+	this->meshBuffer.indices.clear();
+
 	this->currentTransformation = glm::mat4();
 	this->fillColor = { 1.0, 1.0, 1.0, 1.0 };
 
@@ -26,25 +29,31 @@ void xr::RenderBatch::setFillColor(glm::vec4 color)
 void xr::RenderBatch::setCameraMatrix(const glm::mat4 & cameraMatrix)
 {
 	this->currentTransformation = cameraMatrix;
-	this->currentTextureBatch->transBatches.emplace_back(currentTransformation);
 
-	this->currentMesh = &this->currentTextureBatch->transBatches.back().mesh;
+	this->currentTextureBatch->transBatches.emplace_back(currentTransformation);
+	this->currentIndexRange = &this->currentTextureBatch->transBatches.back().indexRange;
+	this->currentIndexRange->lower = this->currentIndexRange->upper = this->meshBuffer.indices.size();
 }
 
 void xr::RenderBatch::setTexture(const Texture & texture, const Rectangle<float>& region)
 {
-	// Add a new Transformation batch if this is a new texture or
-	// the matrix has changed since last time this texture was used
 	TextureBatch& textureBatch = this->textureBatches[texture];
-	if (textureBatch.transBatches.size() == 0 ||
-		textureBatch.transBatches.back().transformation != currentTransformation) {
-		textureBatch.transBatches.emplace_back(currentTransformation);
+
+	if (this->currentTextureBatch == &textureBatch) {
+		return;
 	}
 
-	this->currentMesh = &textureBatch.transBatches.back().mesh;
+	this->currentTextureBatch = &textureBatch;
 	this->currentTextureRegion = region;
 
-	this->currentTextureBatch = &textureBatch;
+	// Add a new Transformation batch if this is a new texture or
+	// the matrix has changed since last time this texture was used
+	if (textureBatch.transBatches.size() == 0 ||
+		textureBatch.transBatches.back().transformation != currentTransformation) {
+		this->setCameraMatrix(currentTransformation);
+	}
+
+	this->currentIndexRange = &this->currentTextureBatch->transBatches.back().indexRange;
 }
 
 void xr::RenderBatch::setTexture(const TextureRegion & region)
@@ -61,15 +70,18 @@ void xr::RenderBatch::clearTexture()
 void xr::RenderBatch::drawRect(float x, float y, float w, float h)
 {
 	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->currentMesh->vertices.size();
+	int startIndex = this->meshBuffer.vertices.size();
 
 	// Add indices to all vertices
-	this->currentMesh->indices.emplace_back(0 + startIndex);
-	this->currentMesh->indices.emplace_back(1 + startIndex);
-	this->currentMesh->indices.emplace_back(2 + startIndex);
-	this->currentMesh->indices.emplace_back(2 + startIndex);
-	this->currentMesh->indices.emplace_back(3 + startIndex);
-	this->currentMesh->indices.emplace_back(0 + startIndex);
+	this->meshBuffer.indices.emplace_back(0 + startIndex);
+	this->meshBuffer.indices.emplace_back(1 + startIndex);
+	this->meshBuffer.indices.emplace_back(2 + startIndex);
+	this->meshBuffer.indices.emplace_back(2 + startIndex);
+	this->meshBuffer.indices.emplace_back(3 + startIndex);
+	this->meshBuffer.indices.emplace_back(0 + startIndex);
+
+	// Increase index range
+	this->currentIndexRange->upper += 6;
 	
 	// Provide alias for 'currentTextureRegion'
 	auto& r = this->currentTextureRegion;
@@ -77,8 +89,8 @@ void xr::RenderBatch::drawRect(float x, float y, float w, float h)
 	float z = 0;
 
 	// Add vertices
-	this->currentMesh->vertices.emplace_back(glm::vec3{ x, y, z }, glm::vec2{ r.x, r.y + r.height }, this->fillColor);
-	this->currentMesh->vertices.emplace_back(glm::vec3{ x, y + h, z }, glm::vec2{ r.x, r.y }, this->fillColor);
-	this->currentMesh->vertices.emplace_back(glm::vec3{ x + w, y + h, z }, glm::vec2{ r.x + r.width, r.y }, this->fillColor);
-	this->currentMesh->vertices.emplace_back(glm::vec3{ x + w, y, z }, glm::vec2{ r.x + r.width, r.y + r.height }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3{ x, y, z }, glm::vec2{ r.x, r.y + r.height }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3{ x, y + h, z }, glm::vec2{ r.x, r.y }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3{ x + w, y + h, z }, glm::vec2{ r.x + r.width, r.y }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3{ x + w, y, z }, glm::vec2{ r.x + r.width, r.y + r.height }, this->fillColor);
 }

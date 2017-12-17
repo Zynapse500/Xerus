@@ -13,6 +13,8 @@ namespace xr {
 	struct Range {
 		T lower, upper;
 
+		Range() {}
+
 		Range(T lower, T upper)
 			: lower(lower), upper(upper) {}
 	};

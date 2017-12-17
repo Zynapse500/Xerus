@@ -26,7 +26,7 @@ int main() {
 		prefs.contextVersionMajor = 3;
 		prefs.contextVersionMinor = 3;
 		
-		prefs.vsync = false;
+		prefs.vsync = true;
 		prefs.samples = 8;
 		prefs.fullscreen = false;
 
@@ -87,12 +87,13 @@ int main() {
 
 			
 			// Set the current texture
-			renderBatch.setTexture(*currentRegion);
+			// renderBatch.setTexture(*currentRegion);
+			renderBatch.setFillColor(0.5, 0.5, 0.5);
 			
 			// Interpolate
 			float t = (elapsed - animationStart);
 
-			float d = 2;
+			float d = 5.;
 
 			// Go from 0 to 1 in in 'd' seconds
 			auto p = [d](float t) {
@@ -110,12 +111,12 @@ int main() {
 			};
 
 
-			float tileSize = 16;
-			int tileCount = 100000;
+			float tileSize = 4;
+			int tileCount = 30'000;
 			for (int i = 0; i < tileCount; i++)
 			{
-				float xOffset = d * i / 2 / tileCount;
-				float yOffset = xOffset + d / 3;
+				float xOffset = d * i / 1.0 / tileCount;
+				float yOffset = 2 * xOffset + d / 3;
 
 				float x = xr::smootherLerp(p(t + xOffset), 0.f, w - tileSize);
 				float y = xr::smootherLerp(p(t + yOffset), 0.f, h - tileSize);

@@ -59,16 +59,17 @@ void xr::Renderer::clear(float r, float g, float b, float a)
 
 void xr::Renderer::submit(const RenderBatch & batch)
 {
+	this->vertexBuffer.upload(batch.meshBuffer.vertices);
+	this->vertexBuffer.upload(batch.meshBuffer.indices);
+
 	this->shader.use();
 	for (auto& texturePair : batch.textureBatches) {
 		texturePair.first.bind();
 		for (auto& transBatch: texturePair.second.transBatches) {
 			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, glm::value_ptr(transBatch.transformation));
 
-			this->vertexBuffer.upload(transBatch.mesh.vertices);
-			this->vertexBuffer.upload(transBatch.mesh.indices);
-
-			this->vertexBuffer.drawElements(transBatch.mesh.indices.size(), 0);
+			auto& range = transBatch.indexRange;
+			this->vertexBuffer.drawElements(range.upper - range.lower, range.lower);
 		}
 	}
 }
