@@ -37,6 +37,8 @@ void xr::RenderBatch::setCameraMatrix(const glm::mat4 & cameraMatrix)
 
 void xr::RenderBatch::setTexture(const Texture & texture, const Rectangle<float>& region)
 {
+	this->currentTextureRegion = region;
+
 	TextureBatch& textureBatch = this->textureBatches[texture];
 
 	if (this->currentTextureBatch == &textureBatch) {
@@ -44,7 +46,6 @@ void xr::RenderBatch::setTexture(const Texture & texture, const Rectangle<float>
 	}
 
 	this->currentTextureBatch = &textureBatch;
-	this->currentTextureRegion = region;
 
 	// Add a new Transformation batch if this is a new texture or
 	// the matrix has changed since last time this texture was used

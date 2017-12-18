@@ -26,7 +26,7 @@ int main() {
 		prefs.contextVersionMajor = 3;
 		prefs.contextVersionMinor = 3;
 		
-		prefs.vsync = true;
+		prefs.vsync = false;
 		prefs.samples = 8;
 		prefs.fullscreen = false;
 
@@ -87,42 +87,19 @@ int main() {
 
 			
 			// Set the current texture
-			// renderBatch.setTexture(*currentRegion);
-			renderBatch.setFillColor(0.5, 0.5, 0.5);
-			
-			// Interpolate
-			float t = (elapsed - animationStart);
-
-			float d = 5.;
-
-			// Go from 0 to 1 in in 'd' seconds
-			auto p = [d](float t) {
-				float p = fmod(t, d) / d;
-
-				// Reverse direction at half time
-				if (p < 0.5) {
-					p = 2 * p;
-				}
-				else {
-					p = 2 - 2 * p;
-				}
-
-				return p;
-			};
-
-
-			float tileSize = 4;
-			int tileCount = 30'000;
-			for (int i = 0; i < tileCount; i++)
+			int tileSize = 16;
+			srand(420);
+			int regionCount = textureRegions.size();
+			tileCount = 0;
+			for (float x = 0; x < w; x += tileSize)
 			{
-				float xOffset = d * i / 1.0 / tileCount;
-				float yOffset = 2 * xOffset + d / 3;
-
-				float x = xr::smootherLerp(p(t + xOffset), 0.f, w - tileSize);
-				float y = xr::smootherLerp(p(t + yOffset), 0.f, h - tileSize);
-
-				// Draw textured quad
-				renderBatch.drawRect(x, y, tileSize, tileSize);
+				for (float y = 0; y < h; y += tileSize)
+				{
+					int region = rand() % regionCount;
+					renderBatch.setTexture(textureRegions[region]);
+					renderBatch.drawRect(x, y, tileSize, tileSize);
+					tileCount++;
+				}
 			}
 
 			
