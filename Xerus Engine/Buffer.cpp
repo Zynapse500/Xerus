@@ -72,11 +72,11 @@ void xr::VertexBuffer::upload(const std::vector<GLuint>& indices) {
 }
 
 
-void xr::VertexBuffer::drawElements(GLuint count, GLuint offset)
+void xr::VertexBuffer::drawElements(GLuint count, GLuint offset, GLenum mode)
 {
 	glBindVertexArray(this->vao);
 	
-	glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, (void*)(offset * sizeof(GLuint)));
+	glDrawElements(mode, count, GL_UNSIGNED_INT, (void*)(offset * sizeof(GLuint)));
 
 	glBindVertexArray(0);
 }

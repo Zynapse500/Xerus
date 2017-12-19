@@ -33,5 +33,15 @@ namespace xr {
 			return (this->x < x + w && this->x + this->width > x &&
 					this->y < y + h && this->y + this->height > y);
 		}
+
+	};
+
+
+	struct Ray2 {
+		glm::vec2 origin;
+		glm::vec2 direction;
+
+		Ray2(glm::vec2 origin, glm::vec2 direction) :
+			origin(origin), direction(direction) {}
 	};
 }

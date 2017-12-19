@@ -252,6 +252,13 @@ void xr::Window::setupCallbacks()
 
 	// Window refresh
 	glfwSetWindowRefreshCallback(this->glfwHandle, refreshCallback);
+
+
+	// Mouse button
+	glfwSetMouseButtonCallback(this->glfwHandle, mouseButtonCallback);
+
+	// Mouse move
+	glfwSetCursorPosCallback(this->glfwHandle, mousePositionCallback);
 }
 
 void xr::Window::keyCallback(GLFWwindow * window, int key, int scancode, int action, int mods)
@@ -302,4 +309,36 @@ void xr::Window::refreshCallback(GLFWwindow * window)
 	}
 }
 
+void xr::Window::mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+	if (Window* wnd = getWindow(window); wnd != nullptr) {
+
+		int x = wnd->cursorPosition.x;
+		int y = wnd->cursorPosition.y;
+
+		WindowCallbacks* callbacks = &wnd->windowCallbacks;
+		if (action == GLFW_PRESS) {
+			if (callbacks->mousePressedCallback) {
+				callbacks->mousePressedCallback(button, x, y);
+			}
+		}
+		else if (action == GLFW_RELEASE) {
+			if (callbacks->mouseReleasedCallback) {
+				callbacks->mouseReleasedCallback(button, x, y);
+			}
+		}
+	}
+}
+
+void xr::Window::mousePositionCallback(GLFWwindow* window, double x, double y) {
+	if (Window* wnd = getWindow(window); wnd != nullptr) {
+
+		wnd->cursorPosition.x = x;
+		wnd->cursorPosition.y = y;
+
+		WindowCallbacks* callbacks = &wnd->windowCallbacks;
+		if (callbacks->mouseMovedCallback) {
+			callbacks->mouseMovedCallback(x, y);
+		}
+	}
+}
 

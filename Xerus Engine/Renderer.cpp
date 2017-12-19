@@ -59,6 +59,17 @@ void xr::Renderer::clear(float r, float g, float b, float a)
 
 void xr::Renderer::submit(const RenderBatch & batch)
 {
+	// Draw lines
+	this->vertexBuffer.upload(batch.lineBuffer.vertices);
+	this->vertexBuffer.upload(batch.lineBuffer.indices);
+
+	batch.defaultTexture.bind();
+	glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, glm::value_ptr(batch.currentTransformation));
+	this->vertexBuffer.drawElements(batch.lineBuffer.indices.size(), 0, GL_LINES);
+
+
+
+
 	this->vertexBuffer.upload(batch.meshBuffer.vertices);
 	this->vertexBuffer.upload(batch.meshBuffer.indices);
 
@@ -72,4 +83,5 @@ void xr::Renderer::submit(const RenderBatch & batch)
 			this->vertexBuffer.drawElements(range.upper - range.lower, range.lower);
 		}
 	}
+
 }

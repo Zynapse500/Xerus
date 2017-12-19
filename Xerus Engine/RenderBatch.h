@@ -29,6 +29,10 @@ namespace xr {
 		// List of meshes
 		Mesh meshBuffer;
 
+		// List of all lines
+		Mesh lineBuffer;
+
+
 		// Pointer to the current index range
 		Range<int>* currentIndexRange;
 
@@ -74,19 +78,39 @@ namespace xr {
 		void setTexture(const Texture & texture, const Rectangle<float>& region = { 0.0f, 0.0f, 1.0f, 1.0f });
 		void setTexture(const TextureRegion& region);
 
-
-		// Draw a filled rectangle
-		void drawRect(float x, float y, float w, float h);
-		void drawRect(glm::vec2 pos, glm::vec2 size) { drawRect(pos.x, pos.y, size.x, size.y); }
-
-	private:
-
 		// Stops rendering with a texture
 		// In reality it switches to an all white texture
 		void clearTexture();
 
 
-		// Adds a transformation
+		// Draw a filled rectangle
+		void fillRect(float x, float y, float w, float h);
+		void fillRect(glm::vec2 pos, glm::vec2 size) { fillRect(pos.x, pos.y, size.x, size.y); }
+
+
+		// Draw a filled polygon
+		void fillPolygon(const std::vector<glm::vec2>& points);
+
+
+		// Draw a filled triangle fan, first point is the center
+		void fillTriangleFan(const std::vector<glm::vec2>& points);
+
+
+		// Draw a filled circle
+		void fillCircle(float x, float y, float r, int segments = 32);
+		void fillCircle(glm::vec2 center, float r, int segments = 32) { fillCircle(center.x, center.y, r, segments); }
+
+
+		// Draw a line
+		void drawLine(float x0, float y0, float x1, float y1);
+		void drawLine(glm::vec2 p1, glm::vec2 p2) { drawLine(p1.x, p1.y, p2.x, p2.y); }
+
+
+		// Draw a mesh
+		void fillTriangles(const std::vector<glm::vec2>& points);
+
+	private:
+
 	};
 
 }

@@ -7,7 +7,7 @@
 #include <GLFW/glfw3.h>
 
 typedef int KeyType;
-
+typedef int MouseButtonType;
 
 namespace xr {
 
@@ -19,6 +19,11 @@ namespace xr {
 		std::function<void(int, int)> windowResizedCallback;
 		std::function<void(int, int)> windowMovedCallback;
 		std::function<void()> windowRefreshedCallback;
+
+		std::function<void(MouseButtonType, int, int)> mousePressedCallback;
+		std::function<void(MouseButtonType, int, int)> mouseReleasedCallback;
+
+		std::function<void(int, int)> mouseMovedCallback;
 	};
 
 	
@@ -62,6 +67,10 @@ namespace xr {
 
 		// The preferred size of the window
 		glm::ivec2 preferredSize;
+
+
+		// The position of the cursor
+		glm::ivec2 cursorPosition;
 
 
 		// Should vsync be enabled?
@@ -176,5 +185,12 @@ namespace xr {
 
 		// Window was refreshed
 		static void refreshCallback(GLFWwindow* window);
+
+
+		// Mouse button was pressed
+		static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
+
+		// Mouse was moved
+		static void mousePositionCallback(GLFWwindow* window, double x, double y);
 	};
 }

@@ -60,7 +60,7 @@ namespace xr {
 		void upload(const std::vector<GLuint>& indices);
 
 		// Draw the vertices in this buffer
-		void drawElements(GLuint count, GLuint offset);
+		void drawElements(GLuint count, GLuint offset, GLenum mode = GL_TRIANGLES);
 
 
 	private:
