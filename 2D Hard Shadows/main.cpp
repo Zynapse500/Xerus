@@ -18,7 +18,7 @@ xr::WindowPreferences createPreferences() {
 	prefs.contextVersionMajor = 3;
 	prefs.contextVersionMinor = 3;
 
-	prefs.vsync = false;
+	prefs.vsync = true;
 	prefs.samples = 8;
 	prefs.fullscreen = false;
 
@@ -49,7 +49,7 @@ glm::vec2 lightPosition;
 glm::vec2* dragLight;
 
 
-void computeShadow(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch);
+void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch);
 
 
 int main() {
@@ -113,7 +113,7 @@ int main() {
 		
 		// Draw walls
 		renderBatch.setFillColor(1.0, 1.0, 1.0);
-		glLineWidth(3);
+		glLineWidth(1);
 		int wallCount =  walls.size();
 		for (int i = 0; i < wallCount; i++){
 			renderBatch.drawLine(walls[i].start, walls[i].end);
@@ -131,7 +131,7 @@ int main() {
 		// Draw shadows
 		// their length should enclose the whole window
 		shadowBatch.setFillColor(0.05, 0.05, 0.05);
-		computeShadow(lightPosition, walls, w * h, &shadowBatch);
+		drawShadows(lightPosition, walls, w * h, &shadowBatch);
 		// shadowBatch.fillTriangles(computeShadow(lightPosition, walls, w * h));
 
 
@@ -208,6 +208,25 @@ void onWindowRefresh()
 void onMousePressed(int button, int x, int y)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+
+		// Place block of walls
+		/*
+		float w = rand() % 190 + 10;
+		float h = rand() % 190 + 10;
+
+		glm::vec2 points[4];
+		for (int i = 0; i < 4; i++)
+		{
+			points[i].x = x + ((i + 1) / 2 == 1 ? w : -w) / 2;
+			points[i].y = y + (i / 2 == 1 ? h : -h) / 2;
+		}
+
+		for (int i = 0; i < 4; i++)
+		{
+			walls.push_back({ points[i], points[(i + 1) % 4] });
+		}
+		*/
+
 		walls.push_back({ {x, y}, {x, y} });
 		wallPaint = &walls.back().end;
 	}
@@ -239,7 +258,7 @@ void onMouseMoved(int x, int y)
 	}
 }
 
-void computeShadow(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch)
+void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch)
 {
 	std::vector<glm::vec2> shadowPoints;
 
@@ -283,6 +302,8 @@ void computeShadow(glm::vec2 light, const std::vector<Wall>& walls, float shadow
 			farPerp = perpPoint + dPerp * shadowLength;
 		}
 
+
+		// Add all points into triangle mesh
 
 		shadowPoints.push_back(walls[i].start);
 		shadowPoints.push_back(farStart);
