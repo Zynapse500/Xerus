@@ -2,9 +2,6 @@
 #include <Xerus.h>
 
 void onKeyPressed(int key);
-void onKeyReleased(int key);
-void onWindowResize(int width, int height);
-void onWindowRefresh();
 
 void onMousePressed(int button, int x, int y);
 void onMouseReleased(int button, int x, int y);
@@ -23,9 +20,6 @@ xr::WindowPreferences createPreferences() {
 	prefs.fullscreen = false;
 
 	prefs.callbacks.keyPressedCallback = onKeyPressed;
-	prefs.callbacks.keyReleasedCallback = onKeyReleased;
-	prefs.callbacks.windowResizedCallback = onWindowResize;
-	prefs.callbacks.windowRefreshedCallback = onWindowRefresh;
 
 	prefs.callbacks.mousePressedCallback = onMousePressed;
 	prefs.callbacks.mouseReleasedCallback = onMouseReleased;
@@ -97,20 +91,7 @@ int main() {
 		renderBatch.setCameraMatrix(proj);
 		shadowBatch.setCameraMatrix(proj);
 
-
-		// Update light position
-		float d = 2;
-		float t = fmod(elapsed, 2 * d);
-		if (t < d) {
-			lightPosition.x = xr::smootherLerp(t / d, 32.f, w - 32.f);
-		}
-		else {
-			lightPosition.x = xr::smootherLerp((t - d) / d, w - 32., 32.);
-		}
-
-		lightPosition.y = 100;
-
-		
+				
 		// Draw walls
 		renderBatch.setFillColor(1.0, 1.0, 1.0);
 		glLineWidth(1);
@@ -193,40 +174,9 @@ void onKeyPressed(int key)
 	}
 }
 
-void onKeyReleased(int key) 
-{
-}
-
-void onWindowResize(int width, int height)
-{
-}
-
-void onWindowRefresh()
-{
-}
-
 void onMousePressed(int button, int x, int y)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-
-		// Place block of walls
-		/*
-		float w = rand() % 190 + 10;
-		float h = rand() % 190 + 10;
-
-		glm::vec2 points[4];
-		for (int i = 0; i < 4; i++)
-		{
-			points[i].x = x + ((i + 1) / 2 == 1 ? w : -w) / 2;
-			points[i].y = y + (i / 2 == 1 ? h : -h) / 2;
-		}
-
-		for (int i = 0; i < 4; i++)
-		{
-			walls.push_back({ points[i], points[(i + 1) % 4] });
-		}
-		*/
-
 		walls.push_back({ {x, y}, {x, y} });
 		wallPaint = &walls.back().end;
 	}
