@@ -7,8 +7,7 @@
 
 xr::RenderBatch::RenderBatch() :
 	defaultTexture(1, 1, GL_RGBA, new unsigned char[4]{255, 255, 255, 255}),
-	currentTextureRegion(0, 0, 1, 1),
-	lineBuffer(GL_LINES)
+	currentTextureRegion(0, 0, 1, 1)
 {
 	this->clearTexture();
 }
@@ -19,10 +18,7 @@ void xr::RenderBatch::clear()
 
 	this->meshBuffer.vertices.clear();
 	this->meshBuffer.indices.clear();
-
-	this->lineBuffer.vertices.clear();
-	this->lineBuffer.indices.clear();
-
+	
 	this->currentTransformation = glm::mat4();
 	this->fillColor = { 1.0, 1.0, 1.0, 1.0 };
 
@@ -262,16 +258,38 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 
 
 
-void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1)
+void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1, float width)
 {
+	// Find the direction of the line
+	glm::vec2 dir = glm::normalize(glm::vec2{ x1 - x0, y1 - y0 });
+
+	// Find the perpendicular line
+	glm::vec2 perp = { -dir.y, dir.x };
+
+	// Find the corners
+	glm::vec2 a = glm::vec2{ x0, y0 } + perp * width / 2.f;
+	glm::vec2 b = glm::vec2{ x0, y0 } - perp * width / 2.f;
+	glm::vec2 c = glm::vec2{ x1, y1 } + perp * width / 2.f;
+	glm::vec2 d = glm::vec2{ x1, y1 } - perp * width / 2.f;
+
+	
 	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->lineBuffer.vertices.size();
+	int startIndex = this->meshBuffer.vertices.size();
 
-	this->lineBuffer.vertices.emplace_back(glm::vec3(x0, y0, 0), glm::vec2(0, 0), this->fillColor);
-	this->lineBuffer.vertices.emplace_back(glm::vec3(x1, y1, 0), glm::vec2(0, 0), this->fillColor);
+	// Add vertices
+	this->meshBuffer.vertices.emplace_back(glm::vec3(a, 0), glm::vec2(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3(b, 0), glm::vec2(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3(c, 0), glm::vec2(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glm::vec3(d, 0), glm::vec2(0), this->fillColor);
 
-	this->lineBuffer.indices.emplace_back(startIndex);
-	this->lineBuffer.indices.emplace_back(startIndex + 1);
+	this->meshBuffer.indices.emplace_back(startIndex);
+	this->meshBuffer.indices.emplace_back(startIndex + 1);
+	this->meshBuffer.indices.emplace_back(startIndex + 2);
+	this->meshBuffer.indices.emplace_back(startIndex + 2);
+	this->meshBuffer.indices.emplace_back(startIndex + 3);
+	this->meshBuffer.indices.emplace_back(startIndex + 1);
+
+	this->currentIndexRange->upper += 6;
 }
 
 

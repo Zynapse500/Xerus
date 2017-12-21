@@ -29,9 +29,6 @@ namespace xr {
 		// List of meshes
 		Mesh meshBuffer;
 
-		// List of all lines
-		Mesh lineBuffer;
-
 
 		// Pointer to the current index range
 		Range<int>* currentIndexRange;
@@ -102,8 +99,8 @@ namespace xr {
 
 
 		// Draw a line
-		void drawLine(float x0, float y0, float x1, float y1);
-		void drawLine(glm::vec2 p1, glm::vec2 p2) { drawLine(p1.x, p1.y, p2.x, p2.y); }
+		void drawLine(float x0, float y0, float x1, float y1, float width = 1);
+		void drawLine(glm::vec2 p1, glm::vec2 p2, float width = 1) { drawLine(p1.x, p1.y, p2.x, p2.y, width); }
 
 
 		// Draw a mesh

@@ -11,6 +11,8 @@
 #include "Texture.h"
 #include "Image.h"
 
+#include "VectorMath.h"
+
 
 
 namespace xr {

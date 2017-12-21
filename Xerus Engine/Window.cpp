@@ -120,6 +120,26 @@ bool xr::Window::getFullscreen()
 	return this->fullscreen;
 }
 
+bool xr::Window::getMouseButton(int button)
+{
+	return glfwGetMouseButton(this->glfwHandle, button);
+}
+
+bool xr::Window::getKey(int key)
+{
+	return glfwGetKey(this->glfwHandle, key);
+}
+
+glm::ivec2 xr::Window::getCursorPosition()
+{
+	double x, y;
+	glfwGetCursorPos(this->glfwHandle, &x, &y);
+	return glm::ivec2(x, y);
+}
+
+
+
+
 void xr::Window::initGLFW()
 {
 	static bool initialized = false;

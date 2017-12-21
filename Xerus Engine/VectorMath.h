@@ -13,4 +13,8 @@ namespace xr {
 		float angle = atan2(det, dot);
 		return angle;
 	}
+
+	
+	// Rotate a 2d-vector counter-clockwise
+	glm::vec2 rotate(glm::vec2 vec, float angle);
 }
