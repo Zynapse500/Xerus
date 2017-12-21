@@ -23,7 +23,12 @@ namespace xr {
 		struct UniformLocations {
 			GLuint cameraMatrix;
 			GLuint texture0;
+			GLuint colorFilter;
 		} uniformLocations;
+
+
+		// Filter color
+		glm::vec4 colorFilter;
 
 	public:
 
@@ -37,6 +42,10 @@ namespace xr {
 
 		// Submit a batch to the renderer
 		void submit(const RenderBatch& batch);
+
+
+		// Set the filter color
+		void setColorFilter(glm::vec4 color);
 	};
 }
 

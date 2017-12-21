@@ -32,11 +32,12 @@ in FragData {
 } frag;
 
 uniform sampler2D texture0;
+uniform vec4 colorFilter;
 
 out vec4 outColor;
 
 void main() {
-	outColor = texture(texture0, frag.texCoord) * frag.color;
+	outColor = texture(texture0, frag.texCoord) * frag.color * colorFilter;
 })";
 
 
@@ -49,6 +50,7 @@ xr::Renderer::Renderer()
 
 	this->uniformLocations.cameraMatrix = shader.getUniformLocation("camera");
 	this->uniformLocations.texture0 = shader.getUniformLocation("texture0");
+	this->uniformLocations.colorFilter = shader.getUniformLocation("colorFilter");
 }
 
 void xr::Renderer::clear(float r, float g, float b, float a)
@@ -63,6 +65,9 @@ void xr::Renderer::submit(const RenderBatch & batch)
 	this->vertexBuffer.upload(batch.meshBuffer.indices);
 
 	this->shader.use();
+
+	glUniform4f(this->uniformLocations.colorFilter, colorFilter.r, colorFilter.g, colorFilter.b, colorFilter.a);
+
 	for (auto& texturePair : batch.textureBatches) {
 		texturePair.first.bind();
 		for (auto& transBatch: texturePair.second.transBatches) {
@@ -73,4 +78,9 @@ void xr::Renderer::submit(const RenderBatch & batch)
 		}
 	}
 
+}
+
+void xr::Renderer::setColorFilter(glm::vec4 color)
+{
+	this->colorFilter = color;
 }

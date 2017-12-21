@@ -43,6 +43,7 @@ xr::AABB player = xr::AABB({ 0, 0 }, { 32, 32 });
 
 struct Box : xr::AABB {
 	int hp = 10;
+	int maxHp = 10;
 
 	Box(glm::vec2 center, glm::vec2 size) :
 		xr::AABB(center, size)
@@ -167,6 +168,7 @@ int main() {
 	window = new xr::Window(1280, 720, "Collisions", createPreferences());
 	xr::Renderer renderer;
 	xr::RenderBatch renderBatch;
+	xr::RenderBatch darkBatch;
 	xr::RenderBatch shadowBatch;
 
 	double elapsed = 0;
@@ -195,6 +197,7 @@ int main() {
 		renderer.clear(0.0, 0.0, 0.0, 1.0);
 
 		renderBatch.clear();
+		darkBatch.clear();
 		shadowBatch.clear();
 
 
@@ -206,6 +209,7 @@ int main() {
 		camera.setPosition(player.center - glm::vec2{w, h} / 2.f);
 
 		renderBatch.setCamera(camera);
+		darkBatch.setCamera(camera);
 		shadowBatch.setCamera(camera);
 
 
@@ -217,7 +221,7 @@ int main() {
 
 		// Draw shadows
 		// their length should enclose the whole window
-		shadowBatch.setFillColor(0.05, 0.05, 0.05);
+		shadowBatch.setFillColor(0.05, 0.05, 0.05, 0.5);
 		drawShadows(player.center, walls, w * h, &shadowBatch);
 
 
@@ -246,6 +250,25 @@ int main() {
 
 
 
+		// Render backdrop
+		{
+			glm::vec2 position = camera.screenToWorld({ -1, 1 });
+
+			renderBatch.setFillColor(0.2, 0.4, 0.2);
+			renderBatch.fillRect(position, { w, h });
+		}
+
+
+
+		// Render boxes
+		for (auto& box : boxes)
+		{
+			float hp = box.hp / float(box.maxHp);
+			renderBatch.setFillColor({ 1 - hp, hp, 0 });
+			renderBatch.fillRect(box.center - box.size / 2.f, box.size);
+		}
+
+
 
 		// Draw walls
 		renderBatch.setFillColor(1.0, 1.0, 1.0);
@@ -258,7 +281,7 @@ int main() {
 
 		// Move player
 		glm::vec2 delta;
-		float speed = window->getKey(GLFW_KEY_LEFT_SHIFT) ? 800 : 600;
+		float speed = window->getKey(GLFW_KEY_LEFT_SHIFT) ? 100 : 600;
 
 		if (window->getKey(GLFW_KEY_W)) {
 			delta.y -= 1;
@@ -286,8 +309,6 @@ int main() {
 			delta = float(deltaTime) * speed * glm::normalize(delta);
 		}
 
-		// Find intersection point
-		Line* normal = nullptr;
 
 		// Collisions
 		int i = 0;
@@ -306,13 +327,6 @@ int main() {
 
 			if (hit) {
 				player.center = hit->point;
-
-				glm::vec2 normalStart = player.center - player.size / 2.f * hit->normal;
-
-				normal = new Line{
-					normalStart,
-					normalStart + 25.f * hit->normal
-				};
 
 				glm::vec2 axis = { hit->normal.y, hit->normal.x };
 				float remainingTime = 1 - hit->time;
@@ -337,13 +351,6 @@ int main() {
 			i++;
 		}
 
-
-		// Render normal
-		if (normal) {
-			renderBatch.setFillColor(0, 1, 1);
-			renderBatch.drawLine(normal->start, normal->end);
-		}
-
 		// Render player
 		renderBatch.setFillColor(1, 0, 0);
 		renderBatch.fillRect(player.center - player.size / 2.f, player.size);
@@ -353,15 +360,15 @@ int main() {
 		
 		// Fire particles
 		if (window->getMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-			const float maxCooldown = 1. / 20;
+			const float maxCooldown = 1. / 200;
 			static float cooldown = maxCooldown;
 
-			if (cooldown < 0) {
+			while (cooldown < 0) {
 				glm::ivec2 mouse = window->getCursorPosition();
 				mouse = mouseToWorld(mouse.x, mouse.y);
 
 				fireBullet(mouse);
-				cooldown = maxCooldown;
+				cooldown += maxCooldown;
 			}
 
 			cooldown -= deltaTime;
@@ -459,33 +466,30 @@ int main() {
 		}
 
 
-		// Render boxes
-		renderBatch.setFillColor(0, 1, 0);
-		for (auto& box : boxes)
-		{
-			renderBatch.fillRect(box.center - box.size / 2.f, box.size);
-		}
 
-
-		// Render backdrop
-		{
-			glm::vec2 position = camera.screenToWorld({ -1, 1 }); // view * glm::vec4(0, 0, 0, 1);
-
-			renderBatch.setFillColor(0.2, 0.4, 0.2);
-			renderBatch.fillRect(position, { w, h });
-		}
+		
 
 
 
-		// Pass if stencil is 1
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		// Pass if stencil is 0, only draw where there is no shadow
+		glStencilFunc(GL_EQUAL, 0, 0xFF);
 		glStencilMask(0x00);
 		glDepthMask(GL_TRUE);
 		glColorMask(1, 1, 1, 1);
 
 
 		// Draw scene
+		renderer.setColorFilter({ 1, 1, 1, 1 });
 		renderer.submit(renderBatch);
+
+
+
+		// Darken scene, only draw in shadow
+		glStencilFunc(GL_EQUAL, 1, 0xFF);
+		renderer.setColorFilter({ 0.25, 0.25, 0.25, 1 });
+		renderer.submit(renderBatch);
+
+
 
 
 
@@ -524,7 +528,8 @@ void onMousePressed(int button, int x, int y)
 			{ w, h }
 		};
 
-		box.hp = sqrt(w * h) / 4;
+		box.hp = sqrt(w * h);
+		box.maxHp = box.hp;
 
 		boxes.push_back(box);
 
@@ -545,8 +550,6 @@ void onMouseReleased(int button, int x, int y)
 
 void onMouseMoved(int x, int y)
 {
-	glm::ivec2 world = mouseToWorld(x, y);
-	printf("%d, %d => %d, %d\n", x, y, world.x, world.y);
 }
 
 void onWindowResized(int width, int height)

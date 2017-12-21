@@ -223,7 +223,7 @@ void xr::Window::setup(WindowPreferences preferences)
 	}
 
 	// Enable depth culling
-	glEnable(GL_DEPTH_TEST);
+	// glEnable(GL_DEPTH_TEST);
 
 	// Enable back face culling
 	/*
@@ -231,6 +231,12 @@ void xr::Window::setup(WindowPreferences preferences)
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	*/
+
+
+	// Enable transparency
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	// glAlphaFunc()
 }
 
 
