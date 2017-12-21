@@ -96,7 +96,7 @@ int main() {
 			glm::mat4 proj = glm::perspective(glm::radians(70.f), h == 0 ? 0 : w / h, 0.1f, 100.f);
 
 			proj = glm::ortho(0.0f, w, h, 0.0f);
-			renderBatch.setCameraMatrix(proj);
+			renderBatch.setCamera(proj);
 
 			
 			renderBatch.clearTexture();

@@ -2,6 +2,7 @@
 
 #include "Mesh.h"
 #include "Texture.h"
+#include "Camera.h"
 
 namespace xr {
 
@@ -68,7 +69,8 @@ namespace xr {
 
 
 		// Set the camera matrix
-		void setCameraMatrix(const glm::mat4& cameraMatrix);
+		void setCamera(const glm::mat4& cameraMatrix);
+		void setCamera(const Camera& camera);
 
 
 		// Sets the current texture

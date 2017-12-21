@@ -30,7 +30,12 @@ void xr::RenderBatch::setFillColor(glm::vec4 color)
 	this->fillColor = color;
 }
 
-void xr::RenderBatch::setCameraMatrix(const glm::mat4 & cameraMatrix)
+void xr::RenderBatch::setCamera(const Camera & camera)
+{
+	this->setCamera(camera.getTransform());
+}
+
+void xr::RenderBatch::setCamera(const glm::mat4 & cameraMatrix)
 {
 	this->currentTransformation = cameraMatrix;
 
@@ -55,7 +60,7 @@ void xr::RenderBatch::setTexture(const Texture & texture, const Rectangle<float>
 	// the matrix has changed since last time this texture was used
 	if (textureBatch.transBatches.size() == 0 ||
 		textureBatch.transBatches.back().transformation != currentTransformation) {
-		this->setCameraMatrix(currentTransformation);
+		this->setCamera(currentTransformation);
 	}
 
 	this->currentIndexRange = &this->currentTextureBatch->transBatches.back().indexRange;

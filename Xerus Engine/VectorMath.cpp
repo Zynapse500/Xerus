@@ -8,6 +8,6 @@ glm::vec2 xr::rotate(glm::vec2 vec, float angle)
 
 	return {
 		vec.x * cs - vec.y * sn,
-		vec.y * sn + vec.y * cs,
+		vec.x * sn + vec.y * cs,
 	};
 }

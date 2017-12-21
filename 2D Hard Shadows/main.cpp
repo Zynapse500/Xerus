@@ -88,8 +88,8 @@ int main() {
 		float h = (float)window.getHeight();
 
 		glm::mat4 proj = glm::ortho(0.0f, w, h, 0.0f);
-		renderBatch.setCameraMatrix(proj);
-		shadowBatch.setCameraMatrix(proj);
+		renderBatch.setCamera(proj);
+		shadowBatch.setCamera(proj);
 
 				
 		// Draw walls

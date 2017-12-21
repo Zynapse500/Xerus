@@ -142,6 +142,9 @@ namespace xr {
 		// Return the position of the cursor
 		glm::ivec2 getCursorPosition();
 
+		// Converts window client space [0, size] to screen space [-1, 1]
+		glm::vec2 windowToScreen(glm::vec2 window);
+
 	private:
 
 		// Initializes GLFW

@@ -7,6 +7,7 @@ void onMousePressed(int button, int x, int y);
 void onMouseReleased(int button, int x, int y);
 void onMouseMoved(int x, int y);
 
+void onWindowResized(int width, int height);
 
 xr::Window* window = nullptr;
 
@@ -25,6 +26,8 @@ xr::WindowPreferences createPreferences() {
 	prefs.callbacks.mouseReleasedCallback = onMouseReleased;
 	prefs.callbacks.mouseMovedCallback = onMouseMoved;
 
+	prefs.callbacks.windowResizedCallback = onWindowResized;
+
 	return prefs;
 }
 
@@ -35,7 +38,7 @@ struct Line {
 };
 
 
-xr::AABB player = xr::AABB({ 72, 128 }, { 32, 32 });
+xr::AABB player = xr::AABB({ 0, 0 }, { 32, 32 });
 
 
 struct Box : xr::AABB {
@@ -113,10 +116,10 @@ public :
 
 				glm::vec2 reflection = glm::normalize(velocity - 2.f * glm::dot(velocity, hit->normal) * hit->normal);
 
-				for (int i = 0; i < 10; i++)
+				for (int i = 0; i < 4; i++)
 				{
 					// Rotate reflection randomly
-					float angle = glm::pi<float>() * (rand() / float(RAND_MAX) - 0.5);
+					float angle = glm::pi<float>() * (rand() / float(RAND_MAX) - 0.5) / 2;
 					glm::vec2 newVel = xr::rotate(reflection, angle);
 
 					newParticles.push_back(new Particle(Particle::newLine(hit->point, 500.f * newVel, { 1, 0.8, 0 }, 10, 1, 0.1)));
@@ -152,9 +155,8 @@ void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLe
 
 
 
-// Camera matrix
-glm::mat4 camera;
-
+// Camera 
+xr::OrthographicCamera camera(1280, 720);
 
 // Converts screen coordinates to world coordinates
 glm::ivec2 mouseToWorld(int x, int y);
@@ -195,21 +197,16 @@ int main() {
 		renderBatch.clear();
 		shadowBatch.clear();
 
-		// Set the current camera
+
+
 		float w = (float)window->getWidth();
 		float h = (float)window->getHeight();
+		
+		// Set the current camera
+		camera.setPosition(player.center - glm::vec2{w, h} / 2.f);
 
-		glm::mat4 proj = glm::ortho(0.0f, w, h, 0.0f);
-
-		glm::mat4 view = glm::translate(glm::mat4(), glm::vec3(-player.center + glm::vec2{w, h} / 2.f, 0));
-
-		camera = proj * view;
-
-		renderBatch.setCameraMatrix(camera);
-		shadowBatch.setCameraMatrix(camera);
-
-
-
+		renderBatch.setCamera(camera);
+		shadowBatch.setCamera(camera);
 
 
 
@@ -248,8 +245,6 @@ int main() {
 		renderer.submit(shadowBatch);
 
 
-
-		
 
 
 		// Draw walls
@@ -474,10 +469,10 @@ int main() {
 
 		// Render backdrop
 		{
-			glm::vec2 position = view * glm::vec4(0, 0, 0, 1);
+			glm::vec2 position = camera.screenToWorld({ -1, 1 }); // view * glm::vec4(0, 0, 0, 1);
 
 			renderBatch.setFillColor(0.2, 0.4, 0.2);
-			renderBatch.fillRect(-position, { w, h });
+			renderBatch.fillRect(position, { w, h });
 		}
 
 
@@ -550,6 +545,13 @@ void onMouseReleased(int button, int x, int y)
 
 void onMouseMoved(int x, int y)
 {
+	glm::ivec2 world = mouseToWorld(x, y);
+	printf("%d, %d => %d, %d\n", x, y, world.x, world.y);
+}
+
+void onWindowResized(int width, int height)
+{
+	camera.setProjection(width, height);
 }
 
 void fireBullet(glm::vec2 target)
@@ -557,7 +559,7 @@ void fireBullet(glm::vec2 target)
 	glm::vec2 vel = 2000.f * glm::normalize(target - player.center);
 
 	// Add some inaccuracy
-	float angle = glm::pi<float>() * (float(rand()) / RAND_MAX - 0.5) / 8;
+	float angle = glm::pi<float>() * (float(rand()) / RAND_MAX - 0.5) / 12;
 
 	vel =  xr::rotate(vel, angle);
 
@@ -632,8 +634,10 @@ void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLe
 
 glm::ivec2 mouseToWorld(int x, int y)
 {
-	glm::vec2 size = window->getSize();
-	return { x + player.center.x - size.x / 2.f, y + player.center.y - size.y / 2.f };
+	glm::vec2 screen = window->windowToScreen({ x, y });
+
+	glm::vec2 world = camera.screenToWorld(screen);
+	return world;
 }
 
 

@@ -12,7 +12,7 @@
 #include "Image.h"
 
 #include "VectorMath.h"
-
+#include "Camera.h"
 
 
 namespace xr {

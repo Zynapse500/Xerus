@@ -137,6 +137,11 @@ glm::ivec2 xr::Window::getCursorPosition()
 	return glm::ivec2(x, y);
 }
 
+glm::vec2 xr::Window::windowToScreen(glm::vec2 window)
+{
+	return (2.f * window / glm::vec2(size) - 1.f) * glm::vec2(1, -1);
+}
+
 
 
 
