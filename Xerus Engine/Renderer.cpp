@@ -41,8 +41,9 @@ void main() {
 })";
 
 
-xr::Renderer::Renderer()
-	: shader(vertexSource, fragmentSource)
+xr::Renderer::Renderer() :
+	shader(vertexSource, fragmentSource),
+	colorFilter(1, 1, 1, 1)
 {
 	shader.bindAttribute(ATTR_POSITION, "position");
 	shader.bindAttribute(ATTR_TEX_COORD, "texCoord");

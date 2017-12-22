@@ -244,6 +244,7 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 	int startIndex = this->meshBuffer.vertices.size();
 
 	// Add vertices
+	this->meshBuffer.vertices.reserve(startIndex + segments + 1);
 	this->meshBuffer.vertices.emplace_back(glm::vec3(x, y, 0), glm::vec2{ 0, 0 }, this->fillColor);
 	for (int i = 0; i < segments; i++)
 	{
@@ -252,6 +253,7 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 		this->meshBuffer.vertices.emplace_back(glm::vec3(x + dx, y + dy, 0), glm::vec2{ 0, 0 }, this->fillColor);
 	}
 
+	this->meshBuffer.indices.reserve(this->meshBuffer.indices.size() + segments * 3);
 	for (int i = 0; i < segments; i++) {
 		this->meshBuffer.indices.emplace_back(startIndex + 0);
 		this->meshBuffer.indices.emplace_back(startIndex + i + 1);

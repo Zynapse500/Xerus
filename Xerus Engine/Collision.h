@@ -3,6 +3,11 @@
 
 namespace xr {
 
+	// Forward declarations
+	struct AABB;
+	struct Circle;
+
+
 	// Types of collisions
 
 	// An object intersects another object at a specific point
@@ -18,6 +23,20 @@ namespace xr {
 
 		// The normal of the intersection
 		glm::vec2 normal;
+
+
+		// Convert to bool
+		operator bool() const {
+			return intersects;
+		}
+
+		// Compare time
+		bool operator<(const Hit& other) {
+			return time < other.time;
+		}
+		bool operator>(const Hit& other) {
+			return time > other.time;
+		}
 	};
 
 
@@ -65,6 +84,8 @@ namespace xr {
 
 
 
+
+
 	struct AABB {
 		// The center of the box
 		glm::vec2 center;
@@ -90,12 +111,32 @@ namespace xr {
 		// Sweeps a rectangle and returns collision
 		Hit sweep(const AABB& box, glm::vec2 delta);
 
+		// Sweeps a circle and returns collision
+		Hit sweep(const Circle& circle, glm::vec2 delta);
 
 	private:
 
 		// Returns the bounds of this box [left, right, top, bottom]
 		glm::vec4 getBounds() const;
 
+	};
+
+
+	struct Circle {
+		// Center of the circle
+		glm::vec2 center;
+
+		// Radius of the circle
+		float radius;
+
+		Circle(glm::vec2 center, float radius) :
+			center(center), radius(radius) {}
+
+		// Intersect with ray, from a to b
+		Hit intersects(glm::vec2 a, glm::vec2 b);
+
+		// Sweep circle and return collision
+		Hit sweep(const Circle& circle, glm::vec2 delta);
 	};
 
 }

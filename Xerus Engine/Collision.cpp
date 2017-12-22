@@ -16,9 +16,9 @@ bool xr::AABB::contains(glm::vec2 p)
 xr::Hit xr::AABB::intersects(glm::vec2 a, glm::vec2 b)
 {
 	// If the line is inside already, it's already intersecting
-	/*if (this->contains(a)) {
+	if (this->contains(a)) {
 		return { true, 0, a };
-	}*/
+	}
 	
 	// Bounds of the box
 	glm::vec2 lowerBounds = {
@@ -66,6 +66,8 @@ xr::Hit xr::AABB::intersects(glm::vec2 a, glm::vec2 b)
 
 	glm::vec2 normal;
 
+	
+
 	if (entryTimes.x > entryTimes.y) {
 		// Collision on x-bound
 		normal.x = delta.x > 0 ? -1 : 1;
@@ -102,6 +104,52 @@ xr::Hit xr::AABB::sweep(const AABB & box, glm::vec2 delta)
 	return padded.intersects(box.center, box.center + delta);
 }
 
+xr::Hit xr::AABB::sweep(const Circle& circle, glm::vec2 delta)
+{
+	// Create new box that's padded with the swept circle's radius
+	AABB padded = {
+		this->center,
+		this->size + 2 * circle.radius
+	};
+
+	Hit hit = padded.intersects(circle.center, circle.center + delta);
+
+	// If we hit a corner, check with a circle instead
+	glm::vec2 p = hit.point - this->center;
+	float sx = size.x;
+	float sy = size.y;
+
+	// Top
+	if (p.y < -sy / 2) {
+		// Left
+		if (p.x < -sx / 2) {
+			Circle padding = { this->center + glm::vec2{-sx / 2, -sy / 2}, circle.radius };
+			return std::min(hit, padding.intersects(circle.center, circle.center + delta));
+		}
+		// Right
+		if (p.x > sx / 2) {
+			Circle padding = { this->center + glm::vec2{ sx / 2, -sy / 2 }, circle.radius };
+			return std::min(hit, padding.intersects(circle.center, circle.center + delta));
+		}
+	}
+
+	// Bottom
+	if (p.y > sy / 2) {
+		// Left
+		if (p.x < -sx / 2) {
+			Circle padding = { this->center + glm::vec2{ -sx / 2, sy / 2 }, circle.radius };
+			return std::min(hit, padding.intersects(circle.center, circle.center + delta));
+		}
+		// Right
+		if (p.x > sx / 2) {
+			Circle padding = { this->center + glm::vec2{ sx / 2, sy / 2 }, circle.radius };
+			return std::min(hit, padding.intersects(circle.center, circle.center + delta));
+		}
+	}
+
+	return hit;
+}
+
 glm::vec4 xr::AABB::getBounds() const
 {
 	return glm::vec4(
@@ -110,4 +158,61 @@ glm::vec4 xr::AABB::getBounds() const
 		center.y - size.y / 2,
 		center.y + size.y / 2
 	);
+}
+
+xr::Hit xr::Circle::intersects(glm::vec2 start, glm::vec2 end)
+{
+	// Direction of line
+	glm::vec2 delta = end - start;
+	glm::vec2 lineDir = delta;
+
+	// Direction from line start to circle
+	glm::vec2 direction = start - center;
+
+
+	// Solve quadratic equation
+	float a = glm::dot(lineDir, lineDir);
+	float b = 2.f * glm::dot(direction, lineDir);
+	float c = glm::dot(direction, direction) - radius * radius;
+
+	float discriminant = b*b - 4.f * a*c;
+	if (discriminant >= 0) {
+		discriminant = sqrt(discriminant);
+
+		float t1 = (-b - discriminant) / (2 * a);
+		float t2 = (-b + discriminant) / (2 * a);
+
+		// 3x HIT cases:
+		//          -o->             --|-->  |            |  --|->
+		// Impale(t1 hit,t2 hit), Poke(t1 hit,t2>1), ExitWound(t1<0, t2 hit), 
+
+		// 3x MISS cases:
+		//       ->  o                     o ->              | -> |
+		// FallShort (t1>1,t2>1), Past (t1<0,t2<0), CompletelyInside(t1<0, t2>1)
+
+		if (0 <= t1 && t1 <= 1) {
+			glm::vec2 point = start + t1 * delta;
+			return { true, t1, point, glm::normalize(point - center) };
+		}
+
+		if (0 <= t2 && t2 <= 1) {
+			glm::vec2 point = start + t2 * delta;
+			return { true, t2, point, glm::normalize(point - center) };
+		}
+	}
+
+
+	return { false, 1 };
+}
+
+xr::Hit xr::Circle::sweep(const Circle & circle, glm::vec2 delta)
+{
+	// Create new cirlce that's padded with the swept cirlce
+	Circle padded = {
+		this->center,
+		this->radius + circle.radius
+	};
+
+	// Intersect the box's path
+	return padded.intersects(circle.center, circle.center + delta);
 }
