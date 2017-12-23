@@ -39,8 +39,6 @@ struct Line {
 
 
 xr::AABB player = xr::AABB({ 0, 0 }, { 32, 32 });
-xr::AABB enemy = { { 256, 256 }, {40, 40} };
-glm::vec2 enemyVelocity = { 0, 0 };
 
 
 struct Box : xr::AABB {
@@ -356,71 +354,6 @@ int main() {
 		}
 
 
-		// Render enemy fov
-		i = 0;
-		enemyVelocity += 2000.f * float(deltaTime) * glm::normalize(player.center - enemy.center);
-		enemyVelocity /= 1 + 3 * deltaTime;
-		delta = float(deltaTime) * enemyVelocity;
-		while (glm::length(delta) > 0 && i < 100) {
-			xr::Hit* hit = nullptr;
-
-			for (auto& box : boxes) {
-				auto h = box.sweep(enemy, delta);
-				if (h.intersects) {
-					if (!hit || h.time < hit->time) {
-						delete hit;
-						hit = new xr::Hit(h);
-					}
-				}
-			}
-
-
-			if (hit) {
-				enemy.center = hit->point;
-
-				glm::vec2 axis = { hit->normal.y, hit->normal.x };
-				float remainingTime = 1 - hit->time;
-
-				float dot = remainingTime * glm::dot(axis, delta);
-				delta = axis * dot;
-
-				dot = remainingTime * glm::dot(axis, enemyVelocity);
-				enemyVelocity = axis * dot;
-			}
-			else {
-				enemy.center += delta;
-				delta = { 0, 0 };
-			}
-			
-			delete hit;
-			i++;
-		}
-
-		{
-			xr::Hit* coll = nullptr;
-			for (auto& box : boxes)
-			{
-				xr::Hit hit = box.intersects(enemy.center, player.center);
-				if (hit.intersects) {
-					if (!coll || coll->time < hit.time)
-						coll = new xr::Hit(hit);
-				}
-			}
-
-			if (coll) {
-				renderBatch.setFillColor(1, 0.5, 0.5);
-				renderBatch.drawLine(enemy.center, coll->point);
-			}
-			else {
-				renderBatch.setFillColor(0, 1, 1);
-				renderBatch.drawLine(enemy.center, player.center);
-			}
-		}
-
-		// Render enenmy
-		renderBatch.setFillColor(1, 1, 0);
-		renderBatch.fillRect(enemy.center - enemy.size / 2.f, enemy.size);
-
 		// Render player
 		renderBatch.setFillColor(1, 0, 0);
 		renderBatch.fillRect(player.center - player.size / 2.f, player.size);
@@ -430,7 +363,7 @@ int main() {
 		
 		// Fire particles
 		if (window->getMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-			const float maxCooldown = 1. / 200;
+			const float maxCooldown = 1. / 20;
 			static float cooldown = maxCooldown;
 
 			while (cooldown < 0) {

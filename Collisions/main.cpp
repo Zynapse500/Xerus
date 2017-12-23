@@ -46,6 +46,7 @@ glm::ivec2 mouseToWorld(glm::ivec2 mouse) { return mouseToWorld(mouse.x, mouse.y
 
 // Box
 xr::AABB box{ {640, 360}, {400, 200} };
+xr::AABB sweepBox{ {0, 0}, {25, 25} };
 
 // Cirlce
 xr::Circle circle{ { 640, 360 }, 100 };
@@ -114,18 +115,32 @@ int main() {
 		renderBatch.fillCircle(circle.center, circle.radius, 64);
 
 
+		sweepBox.center = line.start;
+
+		renderBatch.setFillColor(1, 0.5, 1);
+		renderBatch.fillRect(sweepBox.center - sweepBox.size / 2.f, sweepBox.size);
+
 
 		// Line intersect box
-		if (xr::Hit hit = box.intersects(line.start, line.end)) {
+		if (xr::Hit hit = box.sweep(sweepBox, line.end - line.start)) {
 			renderBatch.setFillColor(1, 1, 1);
 			renderBatch.drawLine(line.start, line.end);
 
 			renderBatch.setFillColor(1, 0, 0);
 			renderBatch.drawLine(line.start, hit.point);
+
+			renderBatch.setFillColor(1, 0.0, 1);
+			renderBatch.fillRect(hit.point - sweepBox.size / 2.f, sweepBox.size);
+
+			renderBatch.setFillColor(0, 1, 1);
+			renderBatch.drawLine(hit.point, hit.point + 20.f * hit.normal, 2);
 		}
 		else {
 			renderBatch.setFillColor(1, 0, 0);
 			renderBatch.drawLine(line.start, line.end);
+
+			renderBatch.setFillColor(1, 0.0, 1);
+			renderBatch.fillRect(line.end - sweepBox.size / 2.f, sweepBox.size);
 		}
 
 

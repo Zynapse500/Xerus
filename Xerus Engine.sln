@@ -21,6 +21,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Collisions", "Collisions\Co
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.vcxproj", "{F5FDDC00-DD56-4236-83C3-DF9267351164}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7F5B9725-5A62-43B0-8A62-2E9E955E6E4E} = {7F5B9725-5A62-43B0-8A62-2E9E955E6E4E}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Level Editor", "Level Editor\Level Editor.vcxproj", "{65600A9D-BBE0-4878-AC9F-11998848AD05}"
 	ProjectSection(ProjectDependencies) = postProject

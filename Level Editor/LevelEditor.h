@@ -21,6 +21,7 @@ public:
 	virtual void keyPressed(int key);
 
 	virtual void mousePressed(int button, int x, int y);
+	virtual void mouseReleased(int button, int x, int y);
 
 	virtual void windowResized(int width, int height);
 
@@ -80,6 +81,18 @@ public:
 	// Draw all blocks
 	void drawBlocks(RenderBatch& batch);
 
+
+
+
+	///////////////////////////
+	// Block Placement ////////
+	///////////////////////////
+
+	// Selection
+	glm::ivec2* selectionStart;
+
+	// Return list of tiles in selection
+	std::vector<glm::ivec2> getSelectionTiles(glm::ivec2 start, glm::ivec2 end);
 
 
 

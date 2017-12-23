@@ -4,7 +4,9 @@
 void LevelEditor::setup()
 {
 	setClearColor(0, 0.4f, 0.1f);
-	getWindow().setVerticalSync(true);
+	getWindow().setVerticalSync(false);
+
+	selectionStart = nullptr;
 }
 
 void LevelEditor::update()
@@ -34,6 +36,17 @@ void LevelEditor::render(Renderer & renderer)
 	// Draw the selected tile
 	batch.setFillColor(0.5, 1, 1, 0.5);
 	batch.fillRect(selectedTile, 1);
+
+	// Draw current selction
+	if (selectionStart) {
+		glm::ivec2 tile = mouseToTile(getWindow().getCursorPosition());
+		std::vector<glm::ivec2> tiles = getSelectionTiles(*selectionStart, tile);
+
+		batch.setFillColor(0, 0, 1, 0.5);
+		for (auto& tile : tiles) {
+			batch.fillRect(tile, 1);
+		}
+	}
 
 
 	if (enableShadows)
@@ -91,13 +104,44 @@ void LevelEditor::mousePressed(int button, int x, int y)
 		glm::ivec2 tile = mouseToTile({ x, y });
 
 		if (getWindow().getKey(GLFW_KEY_LEFT_SHIFT)) {
+			selectionStart = new glm::ivec2(tile);
+		}
+		else if (getWindow().getKey(GLFW_KEY_LEFT_ALT)) {
 			blocks.erase(tile);
+			walls = generateWalls(blocks);
 		}
 		else {
 			blocks[tile] = Block();
+			walls = generateWalls(blocks);
 		}
 
-		walls = generateWalls(blocks);
+	}
+}
+
+void LevelEditor::mouseReleased(int button, int x, int y)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		glm::ivec2 tile = mouseToTile({ x, y });
+
+		if (getWindow().getKey(GLFW_KEY_LEFT_SHIFT)) {
+			std::vector<glm::ivec2> tiles = getSelectionTiles(*selectionStart, tile);
+
+			if (getWindow().getKey(GLFW_KEY_LEFT_ALT)) {
+				for (auto& tile : tiles) {
+					blocks.erase(tile);
+				}
+			}
+			else {
+				for (auto& tile : tiles) {
+					blocks[tile] = Block();
+				}
+			}
+
+			walls = generateWalls(blocks);
+		}
+
+		delete selectionStart;
+		selectionStart = nullptr;
 	}
 }
 
@@ -122,7 +166,6 @@ void LevelEditor::mouseMoved(int x, int y)
 	}
 
 	selectedTile = mouseToTile({ x, y });
-
 
 	// Finish
 	lastMousePosition = { x, y };
@@ -166,6 +209,34 @@ void LevelEditor::drawBlocks(RenderBatch & batch)
 		batch.setFillColor(0, 1, 0);
 		batch.fillRect(position, 1);
 	}
+}
+
+std::vector<glm::ivec2> LevelEditor::getSelectionTiles(glm::ivec2 start, glm::ivec2 end)
+{
+	int left = start.x;
+	int right = end.x;
+	if (start.x > end.x) {
+		left = end.x;
+		right = start.x;
+	}
+
+	int top = start.y;
+	int bottom = end.y;
+	if (start.y > end.y) {
+		top = end.y;
+		bottom = start.y;
+	}
+
+
+	std::vector<glm::ivec2> tiles;
+
+	for (int x = left; x <= right; x++) {
+		for (int y = top; y <= bottom; y++) {
+			tiles.emplace_back(x, y);
+		}
+	}
+
+	return tiles;
 }
 
 std::vector<LevelEditor::Wall> LevelEditor::generateWalls(const std::map<glm::ivec2, Block, Compivec2>& blocks)
