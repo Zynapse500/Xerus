@@ -148,7 +148,7 @@ void xr::RenderBatch::fillPolygon(const std::vector<glm::vec2>& points)
 		glm::vec2 a = glm::normalize(getPoint(i - 1) - o);
 		glm::vec2 b = glm::normalize(getPoint(i + 1) - o);
 
-		float angle = angleBetween(a, b) + PI;
+		float angle = angleBetween(a, b) + float(PI);
 
 		angles[i] = angle;
 	}
@@ -162,14 +162,14 @@ void xr::RenderBatch::fillPolygon(const std::vector<glm::vec2>& points)
 	}
 
 	// The total should be less than pointCount * PI if it's clockwise
-	bool clockwise = angleSum < pointCount * PI;
+	bool clockwise = angleSum < pointCount * float(PI);
 
 
 	// Recalculate angles
 	if (!clockwise) {
 		for (int i = 0; i < pointCount; i++)
 		{
-			angles[i] = 2 * PI - angles[i];
+			angles[i] = 2 * float(PI) - angles[i];
 		}
 	}
 
@@ -248,8 +248,8 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 	this->meshBuffer.vertices.emplace_back(glm::vec3(x, y, 0), glm::vec2{ 0, 0 }, this->fillColor);
 	for (int i = 0; i < segments; i++)
 	{
-		float dx = r * cos(2 * PI * i / float(segments));
-		float dy = r * sin(2 * PI * i / float(segments));
+		float dx = r * cos(2 * float(PI) * i / float(segments));
+		float dy = r * sin(2 * float(PI) * i / float(segments));
 		this->meshBuffer.vertices.emplace_back(glm::vec3(x + dx, y + dy, 0), glm::vec2{ 0, 0 }, this->fillColor);
 	}
 

@@ -114,32 +114,44 @@ int main() {
 		renderBatch.fillCircle(circle.center, circle.radius, 64);
 
 
-		sweepCircle.center = line.start;
 
-		renderBatch.setFillColor(1, 0, 0.5);
-		renderBatch.fillCircle(sweepCircle.center, sweepCircle.radius);
-
-
-		if (xr::Hit hit = box.sweep(sweepCircle, line.end - line.start)) {
-			renderBatch.setFillColor(1, 0, 0);
-			renderBatch.drawLine(line.start, hit.point, 1);
-
+		// Line intersect box
+		if (xr::Hit hit = box.intersects(line.start, line.end)) {
 			renderBatch.setFillColor(1, 1, 1);
-			renderBatch.drawLine(hit.point, line.end, 1);
+			renderBatch.drawLine(line.start, line.end);
 
-			renderBatch.setFillColor(1, 0, 1);
-			renderBatch.fillCircle(hit.point, sweepCircle.radius);
-
-			renderBatch.setFillColor(0, 1, 1);
-			renderBatch.drawLine(hit.point, hit.point + 20.f * hit.normal, 2);
+			renderBatch.setFillColor(1, 0, 0);
+			renderBatch.drawLine(line.start, hit.point);
 		}
 		else {
-			renderBatch.setFillColor(1, 0, 1);
-			renderBatch.fillCircle(line.end, sweepCircle.radius);
-
 			renderBatch.setFillColor(1, 0, 0);
-			renderBatch.drawLine(line.start, line.end, 1);
+			renderBatch.drawLine(line.start, line.end);
 		}
+
+
+
+		// Box sweep circle
+
+		//if (xr::Hit hit = box.sweep(sweepCircle, line.end - line.start)) {
+		//	renderBatch.setFillColor(1, 0, 0);
+		//	renderBatch.drawLine(line.start, hit.point, 1);
+
+		//	renderBatch.setFillColor(1, 1, 1);
+		//	renderBatch.drawLine(hit.point, line.end, 1);
+
+		//	renderBatch.setFillColor(1, 0, 1);
+		//	renderBatch.fillCircle(hit.point, sweepCircle.radius);
+
+		//	renderBatch.setFillColor(0, 1, 1);
+		//	renderBatch.drawLine(hit.point, hit.point + 20.f * hit.normal, 2);
+		//}
+		//else {
+		//	renderBatch.setFillColor(1, 0, 1);
+		//	renderBatch.fillCircle(line.end, sweepCircle.radius);
+
+		//	renderBatch.setFillColor(1, 0, 0);
+		//	renderBatch.drawLine(line.start, line.end, 1);
+		//}
 		
 
 

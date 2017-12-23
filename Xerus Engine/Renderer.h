@@ -38,6 +38,7 @@ namespace xr {
 
 		// Clear color and depth buffer
 		void clear(float r, float g, float b, float a);
+		void clear(glm::vec4 color) { this->clear(color.r, color.g, color.b, color.a); }
 
 
 		// Submit a batch to the renderer

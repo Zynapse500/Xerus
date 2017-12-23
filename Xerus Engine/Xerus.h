@@ -15,6 +15,10 @@
 #include "Camera.h"
 
 
+
+#include "BaseGame.h"
+
+
 namespace xr {
 	
 }

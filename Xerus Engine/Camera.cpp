@@ -17,6 +17,11 @@ void xr::Camera::setPosition(glm::vec3 position)
 	updateView();
 }
 
+glm::vec3 xr::Camera::getPosition()
+{
+	return this->position;
+}
+
 void xr::Camera::setDirection(glm::vec3 direction)
 {
 	this->direction = glm::normalize(direction);
@@ -43,6 +48,12 @@ glm::vec3 xr::Camera::screenToWorld(glm::vec2 screen)
 void xr::Camera::updateView()
 {
 	view = glm::lookAt(position, position + direction, up);
+}
+
+
+xr::OrthographicCamera::OrthographicCamera() :
+	OrthographicCamera(-1, 1, 1, -1)
+{
 }
 
 xr::OrthographicCamera::OrthographicCamera(float width, float height) :

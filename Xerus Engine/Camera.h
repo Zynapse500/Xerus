@@ -32,6 +32,10 @@ namespace xr {
 		void setPosition(glm::vec3 position);
 		void setPosition(glm::vec2 position) { this->setPosition(glm::vec3(position, 0)); }
 
+		// Get the camera's position
+		glm::vec3 getPosition();
+
+
 		// Set the camera's direction
 		void setDirection(glm::vec3 direction);
 
@@ -54,6 +58,9 @@ namespace xr {
 	{
 		
 	public:
+
+		// Default [-1, 1]
+		OrthographicCamera();
 
 		// Standard 2D
 		OrthographicCamera(float width, float height);

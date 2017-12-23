@@ -120,6 +120,17 @@ bool xr::Window::getFullscreen()
 	return this->fullscreen;
 }
 
+void xr::Window::setVerticalSync(bool vsync)
+{
+	this->verticalSync = vsync;
+	glfwSwapInterval(vsync);
+}
+
+bool xr::Window::getVerticalSync()
+{
+	return this->verticalSync;
+}
+
 bool xr::Window::getMouseButton(int button)
 {
 	return glfwGetMouseButton(this->glfwHandle, button);
@@ -170,7 +181,7 @@ void xr::Window::create(int width, int height, const char * title, const WindowP
 
 	// Multisampling samples
 	glfwWindowHint(GLFW_SAMPLES, preferences.samples);
-
+	
 	// The monitor of the window
 	GLFWmonitor* monitor = nullptr;
 
@@ -193,6 +204,16 @@ void xr::Window::create(int width, int height, const char * title, const WindowP
 	if (!glfwHandle) {
 		throw std::runtime_error("Failed to create GLFW window");
 	}
+
+
+	// Center window on monitor
+	int x, y;
+	const GLFWvidmode* mode = glfwGetVideoMode(this->preferredMonitor);
+	glfwGetMonitorPos(this->preferredMonitor, &x, &y);
+	x += (mode->width - width) / 2;
+	y += (mode->height - height) / 2;
+	glfwSetWindowPos(this->glfwHandle, x, y);
+
 
 	this->windows[this->glfwHandle] = this;
 	this->size = { width, height };

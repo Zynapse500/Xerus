@@ -78,7 +78,6 @@ void xr::Renderer::submit(const RenderBatch & batch)
 			this->vertexBuffer.drawElements(range.upper - range.lower, range.lower);
 		}
 	}
-
 }
 
 void xr::Renderer::setColorFilter(glm::vec4 color)

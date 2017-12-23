@@ -63,9 +63,10 @@ namespace xr {
 
 
 		// Set the fill color
-		void setFillColor(float r, float g, float b, float a = 1.0) { setFillColor({ r, g, b, a }); }
-		void setFillColor(glm::vec3 color) { setFillColor(color.r, color.g, color.b); }
 		void setFillColor(glm::vec4 color);
+		void setFillColor(glm::vec3 color) { setFillColor(color.r, color.g, color.b); }
+		void setFillColor(float r, float g, float b, float a = 1.0) { setFillColor({ r, g, b, a }); }
+		void setFillColor(float g, float a = 1.0) { setFillColor({ g, g, g, a }); }
 
 
 		// Set the camera matrix
@@ -84,6 +85,8 @@ namespace xr {
 
 		// Draw a filled rectangle
 		void fillRect(float x, float y, float w, float h);
+		void fillRect(float x, float y, float size) { fillRect(x, y, size, size); }
+		void fillRect(glm::vec2 pos, float size) { fillRect(pos.x, pos.y, size, size); }
 		void fillRect(glm::vec2 pos, glm::vec2 size) { fillRect(pos.x, pos.y, size.x, size.y); }
 
 

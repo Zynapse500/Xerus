@@ -133,6 +133,14 @@ namespace xr {
 		// Return false if this window is in windowed mode, true if in fullscreen
 		bool getFullscreen();
 
+
+		// Enables or disables vsync
+		void setVerticalSync(bool vsync);
+
+		// Gets the current state of vsync
+		bool getVerticalSync();
+
+
 		// Return true if the button is pressed
 		bool getMouseButton(int button);
 
