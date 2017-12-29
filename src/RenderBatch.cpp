@@ -285,7 +285,10 @@ void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1, float wid
 	int startIndex = this->meshBuffer.vertices.size();
 
 	// Add vertices
-	this->meshBuffer.vertices.emplace_back(glt::vec3f(a, 0), glt::vec2f(0), this->fillColor);
+
+	Vertex va {glt::vec3f{a}, glt::vec2f{0}, this->fillColor};
+
+	this->meshBuffer.vertices.push_back(va);
 	this->meshBuffer.vertices.emplace_back(glt::vec3f(b, 0), glt::vec2f(0), this->fillColor);
 	this->meshBuffer.vertices.emplace_back(glt::vec3f(c, 0), glt::vec2f(0), this->fillColor);
 	this->meshBuffer.vertices.emplace_back(glt::vec3f(d, 0), glt::vec2f(0), this->fillColor);

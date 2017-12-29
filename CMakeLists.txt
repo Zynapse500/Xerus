@@ -53,7 +53,7 @@ set(XERUS_SOURCE_FILES
         src/VectorMath.cpp
         src/Vertex.cpp
         src/Window.cpp
-    )
+        src/BitmapFont.cpp)
 
 # Set header files
 set(XERUS_HEADER_FILES
@@ -76,7 +76,7 @@ set(XERUS_HEADER_FILES
         include/Vertex.h
         include/Window.h
         include/Xerus.h
-    )
+        include/BitmapFont.h)
 
 # Create the library
 add_library(xerus ${XERUS_SOURCE_FILES} ${XERUS_HEADER_FILES})

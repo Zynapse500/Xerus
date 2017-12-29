@@ -30,20 +30,20 @@ xr::WindowPreferences createPreferences() {
 
 
 struct Wall {
-	glm::vec2 start;
-	glm::vec2 end;
+	glt::vec2f start;
+	glt::vec2f end;
 };
 
 std::vector<Wall> walls;
 
-glm::vec2* wallPaint;
+glt::vec2f* wallPaint;
 
 
-glm::vec2 lightPosition;
-glm::vec2* dragLight;
+glt::vec2f lightPosition;
+glt::vec2f* dragLight;
 
 
-void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch);
+void drawShadows(glt::vec2f light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch);
 
 
 int main() {
@@ -87,26 +87,26 @@ int main() {
 		float w = (float)window.getWidth();
 		float h = (float)window.getHeight();
 
-		glm::mat4 proj = glm::ortho(0.0f, w, h, 0.0f);
+		glt::mat4f proj = glt::orthographic(0.0f, w, h, 0.0f);
 		renderBatch.setCamera(proj);
 		shadowBatch.setCamera(proj);
 
-				
-		// Draw walls
+
+        // Draw background
+        renderBatch.setFillColor(1, 0.4, 0);
+        renderBatch.fillRect(0, 0, w, h);
+
+
+        // Draw walls
 		renderBatch.setFillColor(1.0, 1.0, 1.0);
-		glLineWidth(1);
-		int wallCount =  walls.size();
+		int wallCount = walls.size();
 		for (int i = 0; i < wallCount; i++){
-			renderBatch.drawLine(walls[i].start, walls[i].end);
+			renderBatch.drawLine(walls[i].start, walls[i].end, 2);
 		}
 
-		// Draw light
-		renderBatch.setFillColor(1.0, 1.0, 0.0);
-		renderBatch.fillCircle(lightPosition, 10);
-		
-		// Draw background
-		renderBatch.setFillColor(1, 0.4, 0);
-		renderBatch.fillRect(0, 0, w, h);
+        // Draw light
+        renderBatch.setFillColor(1.0, 1.0, 0.0);
+        renderBatch.fillCircle(lightPosition, 10);
 
 
 		// Draw shadows
@@ -208,45 +208,45 @@ void onMouseMoved(int x, int y)
 	}
 }
 
-void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch)
+void drawShadows(glt::vec2f light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch)
 {
-	std::vector<glm::vec2> shadowPoints;
+	std::vector<glt::vec2f> shadowPoints;
 
 	int wallCount = walls.size();
 	for (int i = 0; i < wallCount; i++)
 	{
 		// Find the direction of the shadow from the light to the corners
-		glm::vec2 dStart = glm::normalize(walls[i].start - light);
-		glm::vec2 dEnd = glm::normalize(walls[i].end - light);
+		glt::vec2f dStart = glt::normalize(walls[i].start - light);
+		glt::vec2f dEnd = glt::normalize(walls[i].end - light);
 
 		// Cast shadow from corners
-		glm::vec2 farStart = walls[i].start + dStart * shadowLength;
-		glm::vec2 farEnd = walls[i].end + dEnd * shadowLength;
+		glt::vec2f farStart = walls[i].start + dStart * shadowLength;
+		glt::vec2f farEnd = walls[i].end + dEnd * shadowLength;
 
 		// Find line perpendicular to wall and light
-		glm::vec2 farPerp;
+		glt::vec2f farPerp;
 
 		// Translate origin to wall start
-		glm::vec2 wallEnd = walls[i].end - walls[i].start;
-		glm::vec2 lightPos = light - walls[i].start;
+		glt::vec2f wallEnd = walls[i].end - walls[i].start;
+		glt::vec2f lightPos = light - walls[i].start;
 
 		// Project the light's position onto the wall
-		glm::vec2 wallDir = glm::normalize(wallEnd);
+		glt::vec2f wallDir = glt::normalize(wallEnd);
 
 		//  a.b = |a||b| cos 0 = |lightPos| cos 0
-		float proj = glm::dot(lightPos, wallDir);
+		float proj = glt::dot(lightPos, wallDir);
 
 		// Proj has to lie on wall
-		if (proj <= 0 || proj >= glm::length(wallEnd)) {
+		if (proj <= 0 || proj >= glt::length(wallEnd)) {
 			// Place in the middle of the others
 			farPerp = (farStart + farEnd) / 2.f;
 		}
 		else {
 			// Find the projected point on the wall
-			glm::vec2 perpPoint = walls[i].start + proj * wallDir;
+			glt::vec2f perpPoint = walls[i].start + proj * wallDir;
 
 			// Find perpendicular direction
-			glm::vec2 dPerp = glm::normalize(perpPoint - light);
+			glt::vec2f dPerp = glt::normalize(perpPoint - light);
 
 			// Find the far perpendicular point
 			farPerp = perpPoint + dPerp * shadowLength;

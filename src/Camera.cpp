@@ -35,9 +35,9 @@ glt::mat4f xr::Camera::getTransform() const
 
 glt::vec3f xr::Camera::screenToWorld(glt::vec2f screen)
 {
-	glt::vec4f screenExt = {screen, -1, 1};
+	glt::vec4f screenExt {screen, -1, 1};
 
-	glt::mat4f inverse = glt::inverse(projection * view);
+	glt::mat4f inverse = glt::inverse(getTransform());
 
 	glt::vec4f projection = inverse * screenExt;
 	glt::vec3f result = glt::vec3f(projection) / projection.w;
@@ -47,7 +47,7 @@ glt::vec3f xr::Camera::screenToWorld(glt::vec2f screen)
 
 void xr::Camera::updateView()
 {
-	view = glt::translate(glt::mat4f(), -position); // glt::lookAt(position, position + direction, up);
+	view = glt::lookAt(position, position + direction, up);
 }
 
 

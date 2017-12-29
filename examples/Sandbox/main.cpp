@@ -363,7 +363,7 @@ int main() {
 		
 		// Fire particles
 		if (window->getMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-			const float maxCooldown = 1. / 20;
+			const float maxCooldown = 1.f / 200;
 			static float cooldown = maxCooldown;
 
 			while (cooldown < 0) {
@@ -470,10 +470,6 @@ int main() {
 
 
 
-		
-
-
-
 		// Pass if stencil is 0, only draw where there is no shadow
 		glStencilFunc(GL_EQUAL, 0, 0xFF);
 		glStencilMask(0x00);
@@ -521,8 +517,8 @@ void onMousePressed(int button, int x, int y)
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
 
 		glt::vec2i mouse = mouseToWorld(x, y);
-		x = mouse.x;
 		y = mouse.y;
+		x = mouse.x;
 
 		int w = rand() % 256 + 10;
 		int h = rand() % 256 + 10;

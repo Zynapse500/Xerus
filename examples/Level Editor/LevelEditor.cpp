@@ -42,8 +42,8 @@ void LevelEditor::render(Renderer & renderer)
 		std::vector<glt::vec2i> tiles = getSelectionTiles(*selectionStart, tile);
 
 		batch.setFillColor(0, 0, 1, 0.5);
-		for (auto& tile : tiles) {
-			batch.fillRect(tile, 1);
+		for (auto& t : tiles) {
+			batch.fillRect(t, 1);
 		}
 	}
 
@@ -75,7 +75,7 @@ void LevelEditor::render(Renderer & renderer)
 	glColorMask(1, 1, 1, 1);
 	glDepthMask(1);
 
-	renderer.setColorFilter({ glt::vec3f{ shadowDarkness }, 1.0 });
+	renderer.setColorFilter(glt::vec4f{glt::vec3f{ shadowDarkness }, 1.0 });
 	renderer.submit(batch);
 	renderer.setColorFilter({ 1, 1, 1, 1 });
 
@@ -126,13 +126,13 @@ void LevelEditor::mouseReleased(int button, int x, int y)
 			std::vector<glt::vec2i> tiles = getSelectionTiles(*selectionStart, tile);
 
 			if (getWindow().getKey(GLFW_KEY_LEFT_ALT)) {
-				for (auto& tile : tiles) {
-					blocks.erase(tile);
+				for (auto& t : tiles) {
+					blocks.erase(t);
 				}
 			}
 			else {
-				for (auto& tile : tiles) {
-					blocks[tile] = Block();
+				for (auto& t : tiles) {
+					blocks[t] = Block();
 				}
 			}
 
@@ -148,7 +148,7 @@ void LevelEditor::windowResized(int width, int height)
 {
 	this->w = width;
 	this->h = height;
-	
+
 	float right = w / TILE_SIZE / 2;
 	float bottom = h / TILE_SIZE / 2;
 
@@ -160,12 +160,16 @@ void LevelEditor::mouseMoved(int x, int y)
 	static glt::vec2i lastMousePosition = { x, y };
 
 	if (getWindow().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-		glt::vec2f cameraDelta = lastMousePosition - glt::vec2i(x, y);
-		cameraDelta.y *= -1;
-		camera.setPosition(glt::vec2f(camera.getPosition()) + cameraDelta / (TILE_SIZE));
-	}
-
+		glt::vec2f cameraDelta = camera.screenToWorld(getWindow().windowToScreen(lastMousePosition)) -
+				camera.screenToWorld(getWindow().windowToScreen({x, y}));
+		camera.setPosition(glt::vec2f(camera.getPosition()) + cameraDelta);
+    }
 	selectedTile = mouseToTile({ x, y });
+
+
+
+
+
 
 	// Finish
 	lastMousePosition = { x, y };
@@ -296,7 +300,7 @@ void LevelEditor::drawShadows(glt::vec2f light, float shadowLength, RenderBatch 
 		glt::vec2f farEnd = walls[i].end + dEnd * shadowLength;
 
 		// Find line perpendicular to wall and light
-		glt::vec2f farPerp;
+		glt::vec2f farPerpendicular{};
 
 		// Translate origin to wall start
 		glt::vec2f wallEnd = walls[i].end - walls[i].start;
@@ -311,7 +315,7 @@ void LevelEditor::drawShadows(glt::vec2f light, float shadowLength, RenderBatch 
 		// Proj has to lie on wall
 		if (proj <= 0 || proj >= glt::length(wallEnd)) {
 			// Place in the middle of the others
-			farPerp = (farStart + farEnd) / 2.f;
+			farPerpendicular = (farStart + farEnd) / 2.f;
 		}
 		else {
 			// Find the projected point on the wall
@@ -321,7 +325,7 @@ void LevelEditor::drawShadows(glt::vec2f light, float shadowLength, RenderBatch 
 			glt::vec2f dPerp = glt::normalize(perpPoint - light);
 
 			// Find the far perpendicular point
-			farPerp = perpPoint + dPerp * shadowLength;
+			farPerpendicular = perpPoint + dPerp * shadowLength;
 		}
 
 
@@ -329,10 +333,10 @@ void LevelEditor::drawShadows(glt::vec2f light, float shadowLength, RenderBatch 
 
 		shadowPoints.push_back(walls[i].start);
 		shadowPoints.push_back(farStart);
-		shadowPoints.push_back(farPerp);
+		shadowPoints.push_back(farPerpendicular);
 
 		shadowPoints.push_back(walls[i].start);
-		shadowPoints.push_back(farPerp);
+		shadowPoints.push_back(farPerpendicular);
 		shadowPoints.push_back(farEnd);
 
 		shadowPoints.push_back(walls[i].start);
