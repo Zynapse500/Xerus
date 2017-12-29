@@ -7,44 +7,44 @@ namespace xr {
 	protected:
 
 		// Projection matrix
-		glm::mat4 projection;
+		glt::mat4f projection;
 
 		// View matrix
-		glm::mat4 view;
+		glt::mat4f view;
 
 
 		// Position of the camera
-		glm::vec3 position;
+		glt::vec3f position;
 
 		// The direction the camera is facing
-		glm::vec3 direction;
+		glt::vec3f direction;
 
 		// The up-direction
-		glm::vec3 up;
+		glt::vec3f up;
 
 		// Create a new camera from raw parts
-		Camera(glm::mat4 projection, glm::vec3 position, glm::vec3 direction, glm::vec3 up = {0, 1, 0});
+		Camera(glt::mat4f projection, glt::vec3f position, glt::vec3f direction, glt::vec3f up = {0, 1, 0});
 
 	public:
 		
 
 		// Set the camera's position
-		void setPosition(glm::vec3 position);
-		void setPosition(glm::vec2 position) { this->setPosition(glm::vec3(position, 0)); }
+		void setPosition(glt::vec3f position);
+		void setPosition(glt::vec2f position) { this->setPosition(glt::vec3f(position, 0)); }
 
 		// Get the camera's position
-		glm::vec3 getPosition();
+		glt::vec3f getPosition();
 
 
 		// Set the camera's direction
-		void setDirection(glm::vec3 direction);
+		void setDirection(glt::vec3f direction);
 
 		// Return the combined transformation matrix
-		glm::mat4 getTransform() const;
+		glt::mat4f getTransform() const;
 
 
 		// Converts screen coordinates [-1, 1] to world space
-		glm::vec3 screenToWorld(glm::vec2 screen);
+		glt::vec3f screenToWorld(glt::vec2f screen);
 
 
 	private:

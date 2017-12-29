@@ -28,7 +28,7 @@ namespace xr {
 
 
 		// Filter color
-		glm::vec4 colorFilter;
+		glt::vec4f colorFilter;
 
 	public:
 
@@ -38,7 +38,7 @@ namespace xr {
 
 		// Clear color and depth buffer
 		void clear(float r, float g, float b, float a);
-		void clear(glm::vec4 color) { this->clear(color.r, color.g, color.b, color.a); }
+		void clear(glt::vec4f color) { this->clear(color.r, color.g, color.b, color.a); }
 
 
 		// Submit a batch to the renderer
@@ -46,7 +46,7 @@ namespace xr {
 
 
 		// Set the filter color
-		void setColorFilter(glm::vec4 color);
+		void setColorFilter(glt::vec4f color);
 	};
 }
 

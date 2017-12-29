@@ -19,13 +19,13 @@ void xr::RenderBatch::clear()
 	this->meshBuffer.vertices.clear();
 	this->meshBuffer.indices.clear();
 	
-	this->currentTransformation = glm::mat4();
+	this->currentTransformation = glt::mat4f();
 	this->fillColor = { 1.0, 1.0, 1.0, 1.0 };
 
 	this->clearTexture();
 }
 
-void xr::RenderBatch::setFillColor(glm::vec4 color)
+void xr::RenderBatch::setFillColor(glt::vec4f color)
 {
 	this->fillColor = color;
 }
@@ -35,7 +35,7 @@ void xr::RenderBatch::setCamera(const Camera & camera)
 	this->setCamera(camera.getTransform());
 }
 
-void xr::RenderBatch::setCamera(const glm::mat4 & cameraMatrix)
+void xr::RenderBatch::setCamera(const glt::mat4f & cameraMatrix)
 {
 	this->currentTransformation = cameraMatrix;
 
@@ -99,10 +99,10 @@ void xr::RenderBatch::fillRect(float x, float y, float w, float h)
 	float z = 0;
 
 	// Add vertices
-	this->meshBuffer.vertices.emplace_back(glm::vec3{ x, y, z }, glm::vec2{ r.x, r.y + r.height }, this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glm::vec3{ x, y + h, z }, glm::vec2{ r.x, r.y }, this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glm::vec3{ x + w, y + h, z }, glm::vec2{ r.x + r.width, r.y }, this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glm::vec3{ x + w, y, z }, glm::vec2{ r.x + r.width, r.y + r.height }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x, y, z }, glt::vec2f{ r.x, r.y + r.height }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x, y + h, z }, glt::vec2f{ r.x, r.y }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x + w, y + h, z }, glt::vec2f{ r.x + r.width, r.y }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x + w, y, z }, glt::vec2f{ r.x + r.width, r.y + r.height }, this->fillColor);
 }
 
 
@@ -122,7 +122,8 @@ ALGORITHM:
 6. Otherwise construct triangle with the next 2 following points
 5. Repeat step 3-5 until all triangles are constructed
 */
-void xr::RenderBatch::fillPolygon(const std::vector<glm::vec2>& points)
+
+void xr::RenderBatch::fillPolygon(const std::vector<glt::vec2f>& points)
 {
 	int pointCount = points.size();
 
@@ -144,9 +145,9 @@ void xr::RenderBatch::fillPolygon(const std::vector<glm::vec2>& points)
 
 	// Calculate corner angles
 	for (int i = 0; i < pointCount; i++) {
-		glm::vec2 o = getPoint(i);
-		glm::vec2 a = glm::normalize(getPoint(i - 1) - o);
-		glm::vec2 b = glm::normalize(getPoint(i + 1) - o);
+		glt::vec2f o = getPoint(i);
+		glt::vec2f a = glt::normalize(getPoint(i - 1) - o);
+		glt::vec2f b = glt::normalize(getPoint(i + 1) - o);
 
 		float angle = angleBetween(a, b) + float(PI);
 
@@ -178,7 +179,7 @@ void xr::RenderBatch::fillPolygon(const std::vector<glm::vec2>& points)
 	// Add vertices
 	for (int i = 0; i < pointCount; i++)
 	{
-		this->meshBuffer.vertices.emplace_back(glm::vec3(getPoint(i), 0), glm::vec2{ 0, 0 }, this->fillColor);
+		this->meshBuffer.vertices.emplace_back(glt::vec3f(getPoint(i), 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	}
 
 	// Number of triangles left to construct
@@ -214,7 +215,7 @@ void xr::RenderBatch::fillPolygon(const std::vector<glm::vec2>& points)
 
 }
 
-void xr::RenderBatch::fillTriangleFan(const std::vector<glm::vec2>& points)
+void xr::RenderBatch::fillTriangleFan(const std::vector<glt::vec2f>& points)
 {
 	int pointCount = points.size();
 
@@ -225,7 +226,7 @@ void xr::RenderBatch::fillTriangleFan(const std::vector<glm::vec2>& points)
 
 	// Add vertices
 	for (int i = 0; i < pointCount; i++) {
-		this->meshBuffer.vertices.emplace_back(glm::vec3(points[i], 0), glm::vec2{ 0, 0 }, this->fillColor);
+		this->meshBuffer.vertices.emplace_back(glt::vec3f(points[i], 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	}
 
 	// Add indices
@@ -245,12 +246,12 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 
 	// Add vertices
 	this->meshBuffer.vertices.reserve(startIndex + segments + 1);
-	this->meshBuffer.vertices.emplace_back(glm::vec3(x, y, 0), glm::vec2{ 0, 0 }, this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f(x, y, 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	for (int i = 0; i < segments; i++)
 	{
 		float dx = r * cos(2 * float(PI) * i / float(segments));
 		float dy = r * sin(2 * float(PI) * i / float(segments));
-		this->meshBuffer.vertices.emplace_back(glm::vec3(x + dx, y + dy, 0), glm::vec2{ 0, 0 }, this->fillColor);
+		this->meshBuffer.vertices.emplace_back(glt::vec3f(x + dx, y + dy, 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	}
 
 	this->meshBuffer.indices.reserve(this->meshBuffer.indices.size() + segments * 3);
@@ -268,26 +269,26 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1, float width)
 {
 	// Find the direction of the line
-	glm::vec2 dir = glm::normalize(glm::vec2{ x1 - x0, y1 - y0 });
+	glt::vec2f dir = glt::normalize(glt::vec2f{ x1 - x0, y1 - y0 });
 
 	// Find the perpendicular line
-	glm::vec2 perp = { -dir.y, dir.x };
+	glt::vec2f perp = { -dir.y, dir.x };
 
 	// Find the corners
-	glm::vec2 a = glm::vec2{ x0, y0 } + perp * width / 2.f;
-	glm::vec2 b = glm::vec2{ x0, y0 } - perp * width / 2.f;
-	glm::vec2 c = glm::vec2{ x1, y1 } + perp * width / 2.f;
-	glm::vec2 d = glm::vec2{ x1, y1 } - perp * width / 2.f;
+	glt::vec2f a = glt::vec2f{ x0, y0 } + perp * width / 2.f;
+	glt::vec2f b = glt::vec2f{ x0, y0 } - perp * width / 2.f;
+	glt::vec2f c = glt::vec2f{ x1, y1 } + perp * width / 2.f;
+	glt::vec2f d = glt::vec2f{ x1, y1 } - perp * width / 2.f;
 
 	
 	// Get the index of the last vertex and start indexing from there
 	int startIndex = this->meshBuffer.vertices.size();
 
 	// Add vertices
-	this->meshBuffer.vertices.emplace_back(glm::vec3(a, 0), glm::vec2(0), this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glm::vec3(b, 0), glm::vec2(0), this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glm::vec3(c, 0), glm::vec2(0), this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glm::vec3(d, 0), glm::vec2(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f(a, 0), glt::vec2f(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f(b, 0), glt::vec2f(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f(c, 0), glt::vec2f(0), this->fillColor);
+	this->meshBuffer.vertices.emplace_back(glt::vec3f(d, 0), glt::vec2f(0), this->fillColor);
 
 	this->meshBuffer.indices.emplace_back(startIndex);
 	this->meshBuffer.indices.emplace_back(startIndex + 1);
@@ -300,14 +301,14 @@ void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1, float wid
 }
 
 
-void xr::RenderBatch::fillTriangles(const std::vector<glm::vec2>& points) 
+void xr::RenderBatch::fillTriangles(const std::vector<glt::vec2f>& points) 
 {
 	// Get the index of the last vertex and start indexing from there
 	int startIndex = this->meshBuffer.vertices.size();
 
 	for (auto& point : points)
 	{
-		this->meshBuffer.vertices.emplace_back(glm::vec3(point, 0), glm::vec2{ 0, 0 }, this->fillColor);
+		this->meshBuffer.vertices.emplace_back(glt::vec3f(point, 0), glt::vec2f{ 0, 0 }, this->fillColor);
 		this->meshBuffer.indices.emplace_back(startIndex);
 		startIndex++;
 

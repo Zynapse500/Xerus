@@ -72,15 +72,16 @@ void xr::Renderer::submit(const RenderBatch & batch)
 	for (auto& texturePair : batch.textureBatches) {
 		texturePair.first.bind();
 		for (auto& transBatch: texturePair.second.transBatches) {
-			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, glm::value_ptr(transBatch.transformation));
+			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, transBatch.transformation.data);
 
 			auto& range = transBatch.indexRange;
-			this->vertexBuffer.drawElements(range.upper - range.lower, range.lower);
+			this->vertexBuffer.drawElements(static_cast<GLuint>(range.upper - range.lower),
+											static_cast<GLuint>(range.lower));
 		}
 	}
 }
 
-void xr::Renderer::setColorFilter(glm::vec4 color)
+void xr::Renderer::setColorFilter(glt::vec4f color)
 {
 	this->colorFilter = color;
 }

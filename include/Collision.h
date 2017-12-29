@@ -19,10 +19,10 @@ namespace xr {
 		float time;
 
 		// The intersection point if there is one
-		glm::vec2 point;
+		glt::vec2f point;
 
 		// The normal of the intersection
-		glm::vec2 normal;
+		glt::vec2f normal;
 
 
 		// Convert to bool
@@ -75,10 +75,10 @@ namespace xr {
 
 
 	struct Ray2 {
-		glm::vec2 origin;
-		glm::vec2 direction;
+		glt::vec2f origin;
+		glt::vec2f direction;
 
-		Ray2(glm::vec2 origin, glm::vec2 direction) :
+		Ray2(glt::vec2f origin, glt::vec2f direction) :
 			origin(origin), direction(direction) {}
 	};
 
@@ -88,55 +88,55 @@ namespace xr {
 
 	struct AABB {
 		// The center of the box
-		glm::vec2 center;
+		glt::vec2f center;
 
 		// The width and height of the box
-		glm::vec2 size;
+		glt::vec2f size;
 
 
-		AABB(glm::vec2 center, glm::vec2 size) :
+		AABB(glt::vec2f center, glt::vec2f size) :
 			center(center), size(size) {}
 
 
 		// Detemines if this box contains a point
-		bool contains(glm::vec2 p);
+		bool contains(glt::vec2f p);
 
 		// Determines the intersection point of a line segment, from a to b
-		Hit intersects(glm::vec2 a, glm::vec2 b);
+		Hit intersects(glt::vec2f a, glt::vec2f b);
 
 		// Determines if two boxes intersect
 		bool intersects(const AABB& box);
 
 
 		// Sweeps a rectangle and returns collision
-		Hit sweep(const AABB& box, glm::vec2 delta);
+		Hit sweep(const AABB& box, glt::vec2f delta);
 
 		// Sweeps a circle and returns collision
-		Hit sweep(const Circle& circle, glm::vec2 delta);
+		Hit sweep(const Circle& circle, glt::vec2f delta);
 
 	private:
 
 		// Returns the bounds of this box [left, right, top, bottom]
-		glm::vec4 getBounds() const;
+		glt::vec4f getBounds() const;
 
 	};
 
 
 	struct Circle {
 		// Center of the circle
-		glm::vec2 center;
+		glt::vec2f center;
 
 		// Radius of the circle
 		float radius;
 
-		Circle(glm::vec2 center, float radius) :
+		Circle(glt::vec2f center, float radius) :
 			center(center), radius(radius) {}
 
 		// Intersect with ray, from a to b
-		Hit intersects(glm::vec2 a, glm::vec2 b);
+		Hit intersects(glt::vec2f a, glt::vec2f b);
 
 		// Sweep circle and return collision
-		Hit sweep(const Circle& circle, glm::vec2 delta);
+		Hit sweep(const Circle& circle, glt::vec2f delta);
 	};
 
 }

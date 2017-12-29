@@ -33,8 +33,8 @@ xr::WindowPreferences createPreferences() {
 
 
 struct Line {
-	glm::vec2 start;
-	glm::vec2 end;
+	glt::vec2f start;
+	glt::vec2f end;
 };
 
 
@@ -45,7 +45,7 @@ struct Box : xr::AABB {
 	int hp = 10;
 	int maxHp = 10;
 
-	Box(glm::vec2 center, glm::vec2 size) :
+	Box(glt::vec2f center, glt::vec2f size) :
 		xr::AABB(center, size)
 	{}
 };
@@ -61,9 +61,9 @@ enum ParticleType {
 struct Particle {
 	ParticleType type;
 
-	glm::vec2 position;
-	glm::vec2 velocity;
-	glm::vec3 color;
+	glt::vec2f position;
+	glt::vec2f velocity;
+	glt::vec3f color;
 
 	float lifetime;
 
@@ -80,7 +80,7 @@ struct Particle {
 
 		struct {
 			float length;
-			glm::vec2 lastPosition;
+			glt::vec2f lastPosition;
 			float width;
 		} line;
 	};
@@ -89,7 +89,7 @@ struct Particle {
 	Particle() {}
 
 
-	static Particle newLine(glm::vec2 pos, glm::vec2 vel, glm::vec3 color, float length = 10.f, float width = 1.f, float lt = INFINITY) {
+	static Particle newLine(glt::vec2f pos, glt::vec2f vel, glt::vec3f color, float length = 10.f, float width = 1.f, float lt = INFINITY) {
 		Particle particle;
 		particle.type = LINE;
 		particle.position = pos;
@@ -107,7 +107,7 @@ struct Particle {
 
 class Bullet : public Particle {
 public :
-	Bullet(glm::vec2 pos, glm::vec2 vel):
+	Bullet(glt::vec2f pos, glt::vec2f vel):
 		Particle(Particle::newLine(pos, vel, {1, 0.6, 0}, 30, 2, 1))
 	{
 		onKill = [&](xr::Hit* hit) -> std::vector<Particle*> {
@@ -115,13 +115,13 @@ public :
 			if (hit) {
 				std::vector<Particle*> newParticles;
 
-				glm::vec2 reflection = glm::normalize(velocity - 2.f * glm::dot(velocity, hit->normal) * hit->normal);
+				glt::vec2f reflection = glt::normalize(velocity - 2.f * glt::dot(velocity, hit->normal) * hit->normal);
 
 				for (int i = 0; i < 4; i++)
 				{
 					// Rotate reflection randomly
-					float angle = glm::pi<float>() * (rand() / float(RAND_MAX) - 0.5) / 2;
-					glm::vec2 newVel = xr::rotate(reflection, angle);
+					float angle = static_cast<float>(3.14159265359f * (rand() / float(RAND_MAX) - 0.5) / 2);
+					glt::vec2f newVel = xr::rotate(reflection, angle);
 
 					newParticles.push_back(new Particle(Particle::newLine(hit->point, 500.f * newVel, { 1, 0.8, 0 }, 10, 1, 0.1)));
 				}
@@ -138,7 +138,7 @@ public :
 std::vector<Particle*> particles;
 std::vector<Bullet> bullets;
 
-void fireBullet(glm::vec2 target);
+void fireBullet(glt::vec2f target);
 
 
 
@@ -146,13 +146,13 @@ void fireBullet(glm::vec2 target);
 
 
 struct Wall {
-	glm::vec2 start;
-	glm::vec2 end;
+	glt::vec2f start;
+	glt::vec2f end;
 };
 
 std::vector<Wall> walls;
 
-void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch);
+void drawShadows(glt::vec2f light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch);
 
 
 
@@ -160,8 +160,8 @@ void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLe
 xr::OrthographicCamera camera(1280, 720);
 
 // Converts screen coordinates to world coordinates
-glm::ivec2 mouseToWorld(int x, int y);
-glm::ivec2 mouseToWorld(glm::ivec2 mouse) { return mouseToWorld(mouse.x, mouse.y); }
+glt::vec2i mouseToWorld(int x, int y);
+glt::vec2i mouseToWorld(glt::vec2i mouse) { return mouseToWorld(mouse.x, mouse.y); }
 
 
 int main() {
@@ -206,7 +206,7 @@ int main() {
 		float h = (float)window->getHeight();
 		
 		// Set the current camera
-		camera.setPosition(player.center - glm::vec2{w, h} / 2.f);
+		camera.setPosition(player.center - glt::vec2f{w, h} / 2.f);
 
 		renderBatch.setCamera(camera);
 		darkBatch.setCamera(camera);
@@ -252,7 +252,7 @@ int main() {
 
 		// Render backdrop
 		{
-			glm::vec2 position = camera.screenToWorld({ -1, 1 });
+			glt::vec2f position = camera.screenToWorld({ -1, 1 });
 
 			renderBatch.setFillColor(0.2, 0.4, 0.2);
 			renderBatch.fillRect(position, { w, h });
@@ -280,7 +280,7 @@ int main() {
 
 
 		// Move player
-		glm::vec2 delta;
+		glt::vec2f delta;
 		float speed = window->getKey(GLFW_KEY_LEFT_SHIFT) ? 100 : 600;
 
 		if (window->getKey(GLFW_KEY_W)) {
@@ -298,21 +298,21 @@ int main() {
 
 
 		if (window->getMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-			glm::vec2 target = mouseToWorld(window->getCursorPosition());
-			glm::vec2 dir = glm::normalize(target - player.center);
+			glt::vec2f target = mouseToWorld(window->getCursorPosition());
+			glt::vec2f dir = glt::normalize(target - player.center);
 			delta += dir;
 		}
 
 
 
-		if (glm::length(delta) != 0) {
-			delta = float(deltaTime) * speed * glm::normalize(delta);
+		if (glt::length(delta) != 0) {
+			delta = float(deltaTime) * speed * glt::normalize(delta);
 		}
 
 
 		// Collisions
 		int i = 0;
-		while (glm::length(delta) > 0 && i < 100) {
+		while (glt::length(delta) > 0 && i < 100) {
 			xr::Hit* hit = nullptr;
 
 			for (auto& box : boxes) {
@@ -329,11 +329,11 @@ int main() {
 			if (hit) {
 				player.center = hit->point;
 
-				glm::vec2 axis = { hit->normal.y, hit->normal.x };
+				glt::vec2f axis = { hit->normal.y, hit->normal.x };
 				float remainingTime = 1 - hit->time;
 
-				float magnitude = glm::length(delta) * remainingTime;
-				float dot = glm::dot(axis, delta);
+				float magnitude = glt::length(delta) * remainingTime;
+				float dot = glt::dot(axis, delta);
 
 				if (dot > 0) {
 					dot = 1;
@@ -367,7 +367,7 @@ int main() {
 			static float cooldown = maxCooldown;
 
 			while (cooldown < 0) {
-				glm::ivec2 mouse = window->getCursorPosition();
+				glt::vec2i mouse = window->getCursorPosition();
 				mouse = mouseToWorld(mouse.x, mouse.y);
 
 				fireBullet(mouse);
@@ -385,7 +385,7 @@ int main() {
 		for (Particle* particle : particles)
 		{
 			// Move
-			glm::vec2 delta = float(deltaTime) * particle->velocity;
+			glt::vec2f delta = float(deltaTime) * particle->velocity;
 
 			// Check for collisions
 			xr::Hit* earliest = nullptr;
@@ -431,8 +431,8 @@ int main() {
 			switch (particle->type) {
 			case LINE:
 				renderBatch.drawLine(particle->position, particle->line.lastPosition, particle->line.width);
-				if (glm::distance(particle->position, particle->line.lastPosition) > particle->line.length) {
-					particle->line.lastPosition = particle->position - particle->line.length * glm::normalize(particle->velocity);
+				if (glt::distance(particle->position, particle->line.lastPosition) > particle->line.length) {
+					particle->line.lastPosition = particle->position - particle->line.length * glt::normalize(particle->velocity);
 				}
 				break;
 			}
@@ -520,7 +520,7 @@ void onMousePressed(int button, int x, int y)
 {
 	if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
 
-		glm::ivec2 mouse = mouseToWorld(x, y);
+		glt::vec2i mouse = mouseToWorld(x, y);
 		x = mouse.x;
 		y = mouse.y;
 
@@ -531,7 +531,7 @@ void onMousePressed(int button, int x, int y)
 			{ w, h }
 		};
 
-		box.hp = sqrt(w * h);
+		box.hp = static_cast<int>(sqrt(w * h));
 		box.maxHp = box.hp;
 
 		boxes.push_back(box);
@@ -560,12 +560,12 @@ void onWindowResized(int width, int height)
 	camera.setProjection(width, height);
 }
 
-void fireBullet(glm::vec2 target)
+void fireBullet(glt::vec2f target)
 {
-	glm::vec2 vel = 2000.f * glm::normalize(target - player.center);
+	glt::vec2f vel = 2000.f * glt::normalize(target - player.center);
 
 	// Add some inaccuracy
-	float angle = glm::pi<float>() * (float(rand()) / RAND_MAX - 0.5) / 12;
+	float angle = static_cast<float>(3.14159265359 * (float(rand()) / RAND_MAX - 0.5) / 12);
 
 	vel =  xr::rotate(vel, angle);
 
@@ -575,45 +575,45 @@ void fireBullet(glm::vec2 target)
 
 
 
-void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch)
+void drawShadows(glt::vec2f light, const std::vector<Wall>& walls, float shadowLength, xr::RenderBatch* batch)
 {
-	std::vector<glm::vec2> shadowPoints;
+	std::vector<glt::vec2f> shadowPoints;
 
 	int wallCount = walls.size();
 	for (int i = 0; i < wallCount; i++)
 	{
 		// Find the direction of the shadow from the light to the corners
-		glm::vec2 dStart = glm::normalize(walls[i].start - light);
-		glm::vec2 dEnd = glm::normalize(walls[i].end - light);
+		glt::vec2f dStart = glt::normalize(walls[i].start - light);
+		glt::vec2f dEnd = glt::normalize(walls[i].end - light);
 
 		// Cast shadow from corners
-		glm::vec2 farStart = walls[i].start + dStart * shadowLength;
-		glm::vec2 farEnd = walls[i].end + dEnd * shadowLength;
+		glt::vec2f farStart = walls[i].start + dStart * shadowLength;
+		glt::vec2f farEnd = walls[i].end + dEnd * shadowLength;
 
 		// Find line perpendicular to wall and light
-		glm::vec2 farPerp;
+		glt::vec2f farPerp;
 
 		// Translate origin to wall start
-		glm::vec2 wallEnd = walls[i].end - walls[i].start;
-		glm::vec2 lightPos = light - walls[i].start;
+		glt::vec2f wallEnd = walls[i].end - walls[i].start;
+		glt::vec2f lightPos = light - walls[i].start;
 
 		// Project the light's position onto the wall
-		glm::vec2 wallDir = glm::normalize(wallEnd);
+		glt::vec2f wallDir = glt::normalize(wallEnd);
 
 		//  a.b = |a||b| cos 0 = |lightPos| cos 0
-		float proj = glm::dot(lightPos, wallDir);
+		float proj = glt::dot(lightPos, wallDir);
 
 		// Proj has to lie on wall
-		if (proj <= 0 || proj >= glm::length(wallEnd)) {
+		if (proj <= 0 || proj >= glt::length(wallEnd)) {
 			// Place in the middle of the others
 			farPerp = (farStart + farEnd) / 2.f;
 		}
 		else {
 			// Find the projected point on the wall
-			glm::vec2 perpPoint = walls[i].start + proj * wallDir;
+			glt::vec2f perpPoint = walls[i].start + proj * wallDir;
 
 			// Find perpendicular direction
-			glm::vec2 dPerp = glm::normalize(perpPoint - light);
+			glt::vec2f dPerp = glt::normalize(perpPoint - light);
 
 			// Find the far perpendicular point
 			farPerp = perpPoint + dPerp * shadowLength;
@@ -638,11 +638,11 @@ void drawShadows(glm::vec2 light, const std::vector<Wall>& walls, float shadowLe
 	batch->fillTriangles(shadowPoints);
 }
 
-glm::ivec2 mouseToWorld(int x, int y)
+glt::vec2i mouseToWorld(int x, int y)
 {
-	glm::vec2 screen = window->windowToScreen({ x, y });
+	glt::vec2f screen = window->windowToScreen({ x, y });
 
-	glm::vec2 world = camera.screenToWorld(screen);
+	glt::vec2f world = camera.screenToWorld(screen);
 	return world;
 }
 

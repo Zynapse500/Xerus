@@ -41,10 +41,11 @@ void xr::Window::swapBuffers()
 void xr::Window::calculateLastFrameTime()
 {
 	using namespace std::chrono;
-	static auto last = high_resolution_clock::now();
-	auto now = high_resolution_clock::now();
+	static time_point<high_resolution_clock > last = high_resolution_clock::now();
+	time_point<high_resolution_clock > now = high_resolution_clock::now();
 
-	this->lastFrameTime = (now - last).count() / 1e9;
+    auto dur = duration_cast<nanoseconds>(now - last);
+	this->lastFrameTime = dur.count() / 1e9;
 	last = now;
 }
 
@@ -62,7 +63,7 @@ int xr::Window::getHeight() {
 	return size.y;
 }
 
-glm::ivec2 xr::Window::getSize() {
+glt::vec2i xr::Window::getSize() {
 	return size;
 }
 
@@ -133,24 +134,24 @@ bool xr::Window::getVerticalSync()
 
 bool xr::Window::getMouseButton(int button)
 {
-	return glfwGetMouseButton(this->glfwHandle, button);
+	return static_cast<bool>(glfwGetMouseButton(this->glfwHandle, button));
 }
 
 bool xr::Window::getKey(int key)
 {
-	return glfwGetKey(this->glfwHandle, key);
+	return static_cast<bool>(glfwGetKey(this->glfwHandle, key));
 }
 
-glm::ivec2 xr::Window::getCursorPosition()
+glt::vec2i xr::Window::getCursorPosition()
 {
 	double x, y;
 	glfwGetCursorPos(this->glfwHandle, &x, &y);
-	return glm::ivec2(x, y);
+	return {static_cast<int>(x), static_cast<int>(y)};
 }
 
-glm::vec2 xr::Window::windowToScreen(glm::vec2 window)
+glt::vec2f xr::Window::windowToScreen(glt::vec2f window)
 {
-	return (2.f * window / glm::vec2(size) - 1.f) * glm::vec2(1, -1);
+	return (2.f * window / glt::vec2f(size) - 1.f) * glt::vec2f(1, -1);
 }
 
 

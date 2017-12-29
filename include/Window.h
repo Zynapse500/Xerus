@@ -63,14 +63,14 @@ namespace xr {
 		double lastFrameTime;
 
 		// This size of this window
-		glm::ivec2 size;
+		glt::vec2i size;
 
 		// The preferred size of the window
-		glm::ivec2 preferredSize;
+		glt::vec2i preferredSize;
 
 
 		// The position of the cursor
-		glm::ivec2 cursorPosition;
+		glt::vec2i cursorPosition;
 
 
 		// Should vsync be enabled?
@@ -117,7 +117,7 @@ namespace xr {
 		// Return the size of the window
 		int getWidth();
 		int getHeight();
-		glm::ivec2 getSize();
+		glt::vec2i getSize();
 
 		// Set the size of the window
 		void setSize(int width, int height);
@@ -148,10 +148,10 @@ namespace xr {
 		bool getKey(int key);
 
 		// Return the position of the cursor
-		glm::ivec2 getCursorPosition();
+		glt::vec2i getCursorPosition();
 
 		// Converts window client space [0, size] to screen space [-1, 1]
-		glm::vec2 windowToScreen(glm::vec2 window);
+		glt::vec2f windowToScreen(glt::vec2f window);
 
 	private:
 

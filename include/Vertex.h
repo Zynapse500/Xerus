@@ -1,27 +1,27 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glt.hpp>
 
 namespace xr {
 	struct Vertex {
-		glm::vec3 position;
-		glm::vec2 texCoord;
-		glm::vec4 color;
+		glt::vec3f position;
+		glt::vec2f texCoord;
+		glt::vec4f color;
 
 
 		Vertex()
 			: position(0.0), texCoord(0.0), color(1.0) {}
 
-		Vertex(glm::vec3 position)
+        explicit Vertex(const glt::vec3f &position)
 			: position(position), texCoord(0.0), color(1.0) {}
 
-		Vertex(glm::vec3 position, glm::vec4 color)
+		Vertex(const glt::vec3f &position, const glt::vec4f &color)
 			: position(position), texCoord(0.0), color(color) {}
 
-		Vertex(glm::vec3 position, glm::vec2 texCoord)
+		Vertex(const glt::vec3f &position, const glt::vec2f &texCoord)
 			: position(position), texCoord(texCoord), color(1.0) {}
 
-		Vertex(glm::vec3 position, glm::vec2 texCoord, glm::vec4 color)
+		Vertex(const glt::vec3f &position, const glt::vec2f &texCoord, const glt::vec4f &color)
 			: position(position), texCoord(texCoord), color(color) {}
 	};
 }

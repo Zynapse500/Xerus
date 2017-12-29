@@ -26,12 +26,11 @@ void LevelEditor::render(Renderer & renderer)
 	batch.setFillColor(1, 0.4, 0.1);
 	batch.fillRect(camera.screenToWorld({ -1, 1 }), {w / TILE_SIZE, h / TILE_SIZE});
 
-
 	drawGrid(batch);
 	drawBlocks(batch);
 	drawWalls(batch);
 
-	glm::vec2 lightPosition = camera.screenToWorld(getWindow().windowToScreen(getWindow().getCursorPosition()));
+	glt::vec2f lightPosition = camera.screenToWorld(getWindow().windowToScreen(getWindow().getCursorPosition()));
 
 	// Draw the selected tile
 	batch.setFillColor(0.5, 1, 1, 0.5);
@@ -39,8 +38,8 @@ void LevelEditor::render(Renderer & renderer)
 
 	// Draw current selection
 	if (selectionStart) {
-		glm::ivec2 tile = mouseToTile(getWindow().getCursorPosition());
-		std::vector<glm::ivec2> tiles = getSelectionTiles(*selectionStart, tile);
+		glt::vec2i tile = mouseToTile(getWindow().getCursorPosition());
+		std::vector<glt::vec2i> tiles = getSelectionTiles(*selectionStart, tile);
 
 		batch.setFillColor(0, 0, 1, 0.5);
 		for (auto& tile : tiles) {
@@ -76,7 +75,7 @@ void LevelEditor::render(Renderer & renderer)
 	glColorMask(1, 1, 1, 1);
 	glDepthMask(1);
 
-	renderer.setColorFilter({ glm::vec3{ shadowDarkness }, 1.0 });
+	renderer.setColorFilter({ glt::vec3f{ shadowDarkness }, 1.0 });
 	renderer.submit(batch);
 	renderer.setColorFilter({ 1, 1, 1, 1 });
 
@@ -101,10 +100,10 @@ void LevelEditor::keyPressed(int key)
 void LevelEditor::mousePressed(int button, int x, int y)
 {	
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-		glm::ivec2 tile = mouseToTile({ x, y });
+		glt::vec2i tile = mouseToTile({ x, y });
 
 		if (getWindow().getKey(GLFW_KEY_LEFT_SHIFT)) {
-			selectionStart = new glm::ivec2(tile);
+			selectionStart = new glt::vec2i(tile);
 		}
 		else if (getWindow().getKey(GLFW_KEY_LEFT_ALT)) {
 			blocks.erase(tile);
@@ -121,10 +120,10 @@ void LevelEditor::mousePressed(int button, int x, int y)
 void LevelEditor::mouseReleased(int button, int x, int y)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-		glm::ivec2 tile = mouseToTile({ x, y });
+		glt::vec2i tile = mouseToTile({ x, y });
 
 		if (getWindow().getKey(GLFW_KEY_LEFT_SHIFT)) {
-			std::vector<glm::ivec2> tiles = getSelectionTiles(*selectionStart, tile);
+			std::vector<glt::vec2i> tiles = getSelectionTiles(*selectionStart, tile);
 
 			if (getWindow().getKey(GLFW_KEY_LEFT_ALT)) {
 				for (auto& tile : tiles) {
@@ -158,11 +157,12 @@ void LevelEditor::windowResized(int width, int height)
 
 void LevelEditor::mouseMoved(int x, int y)
 {
-	static glm::ivec2 lastMousePosition = { x, y };
+	static glt::vec2i lastMousePosition = { x, y };
 
 	if (getWindow().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-		glm::vec2 cameraDelta = lastMousePosition - glm::ivec2(x, y);
-		camera.setPosition(glm::vec2(camera.getPosition()) + cameraDelta / TILE_SIZE);
+		glt::vec2f cameraDelta = lastMousePosition - glt::vec2i(x, y);
+		cameraDelta.y *= -1;
+		camera.setPosition(glt::vec2f(camera.getPosition()) + cameraDelta / (TILE_SIZE));
 	}
 
 	selectedTile = mouseToTile({ x, y });
@@ -171,11 +171,11 @@ void LevelEditor::mouseMoved(int x, int y)
 	lastMousePosition = { x, y };
 }
 
-glm::ivec2 LevelEditor::mouseToTile(glm::ivec2 mouse)
+glt::vec2i LevelEditor::mouseToTile(glt::vec2i mouse)
 {
-	glm::vec2 world = camera.screenToWorld(getWindow().windowToScreen(mouse));
+	glt::vec2f world = camera.screenToWorld(getWindow().windowToScreen(mouse));
 
-	glm::ivec2 tile = glm::floor(world);
+	glt::vec2i tile = glt::floor(world);
 
 	return tile;
 }
@@ -186,15 +186,15 @@ void LevelEditor::drawGrid(RenderBatch & batch)
 	batch.setFillColor(0.2);
 	float lineWidth = 2 / TILE_SIZE;
 
-	glm::ivec2 topLeft = mouseToTile({ 0, 0 });
-	glm::ivec2 bottomRight = mouseToTile({ w, h });
+	glt::vec2i topLeft = mouseToTile({ 0, 0 });
+	glt::vec2i bottomRight = mouseToTile({static_cast<int>(w), static_cast<int>(h)});
 
 	// Vertical lines
-	for (float x = topLeft.x; x <= bottomRight.x; x++) {
+	for (int x = topLeft.x; x <= bottomRight.x; ++x) {
 		batch.drawLine(x, topLeft.y, x, bottomRight.y + TILE_SIZE, lineWidth);
 	}
 	// Horizontal lines
-	for (float y = topLeft.y; y <= bottomRight.y; y++) {
+	for (int y = topLeft.y; y <= bottomRight.y; ++y) {
 		batch.drawLine(topLeft.x, y, bottomRight.x + TILE_SIZE, y, lineWidth);
 	}
 }
@@ -202,7 +202,7 @@ void LevelEditor::drawGrid(RenderBatch & batch)
 void LevelEditor::drawBlocks(RenderBatch & batch)
 {
 	for (auto& pair : blocks) {
-		glm::ivec2 position = pair.first;
+		glt::vec2i position = pair.first;
 		const Block& block = pair.second;
 
 		// Set the color
@@ -211,7 +211,7 @@ void LevelEditor::drawBlocks(RenderBatch & batch)
 	}
 }
 
-std::vector<glm::ivec2> LevelEditor::getSelectionTiles(glm::ivec2 start, glm::ivec2 end)
+std::vector<glt::vec2i> LevelEditor::getSelectionTiles(glt::vec2i start, glt::vec2i end)
 {
 	int left = start.x;
 	int right = end.x;
@@ -228,7 +228,7 @@ std::vector<glm::ivec2> LevelEditor::getSelectionTiles(glm::ivec2 start, glm::iv
 	}
 
 
-	std::vector<glm::ivec2> tiles;
+	std::vector<glt::vec2i> tiles;
 
 	for (int x = left; x <= right; x++) {
 		for (int y = top; y <= bottom; y++) {
@@ -239,11 +239,11 @@ std::vector<glm::ivec2> LevelEditor::getSelectionTiles(glm::ivec2 start, glm::iv
 	return tiles;
 }
 
-std::vector<LevelEditor::Wall> LevelEditor::generateWalls(const std::map<glm::ivec2, Block, Compivec2>& blocks)
+std::vector<LevelEditor::Wall> LevelEditor::generateWalls(const std::map<glt::vec2i, Block, Compivec2>& blocks)
 {
 	std::vector<Wall> walls;
 
-	glm::ivec2 deltas[4] = {
+	glt::vec2i deltas[4] = {
 		{ 1, 0 },
 		{ 0, 1 },
 		{ -1, 0 },
@@ -252,12 +252,12 @@ std::vector<LevelEditor::Wall> LevelEditor::generateWalls(const std::map<glm::iv
 
 
 	for (auto& pair : blocks) {
-		glm::ivec2 position = pair.first;
+		glt::vec2i position = pair.first;
 		
-		glm::vec2 wallStart = position + deltas[0];
+		glt::vec2f wallStart = position + deltas[0];
 
 		for (int i = 0; i < 4; i++) {
-			glm::vec2 wallEnd = wallStart + glm::vec2(deltas[(i + 1) % 4]);
+			glt::vec2f wallEnd = wallStart + glt::vec2f(deltas[(i + 1) % 4]);
 			if (!blocks.count(position + deltas[i])) {
 				walls.emplace_back(wallStart, wallEnd);
 			}
@@ -279,46 +279,46 @@ void LevelEditor::drawWalls(RenderBatch & batch)
 	}
 }
 
-void LevelEditor::drawShadows(glm::vec2 light, float shadowLength, RenderBatch & batch)
+void LevelEditor::drawShadows(glt::vec2f light, float shadowLength, RenderBatch & batch)
 {
 
-	std::vector<glm::vec2> shadowPoints;
+	std::vector<glt::vec2f> shadowPoints;
 
 	int wallCount = walls.size();
 	for (int i = 0; i < wallCount; i++)
 	{
 		// Find the direction of the shadow from the light to the corners
-		glm::vec2 dStart = glm::normalize(walls[i].start - light);
-		glm::vec2 dEnd = glm::normalize(walls[i].end - light);
+		glt::vec2f dStart = glt::normalize(walls[i].start - light);
+		glt::vec2f dEnd = glt::normalize(walls[i].end - light);
 
 		// Cast shadow from corners
-		glm::vec2 farStart = walls[i].start + dStart * shadowLength;
-		glm::vec2 farEnd = walls[i].end + dEnd * shadowLength;
+		glt::vec2f farStart = walls[i].start + dStart * shadowLength;
+		glt::vec2f farEnd = walls[i].end + dEnd * shadowLength;
 
 		// Find line perpendicular to wall and light
-		glm::vec2 farPerp;
+		glt::vec2f farPerp;
 
 		// Translate origin to wall start
-		glm::vec2 wallEnd = walls[i].end - walls[i].start;
-		glm::vec2 lightPos = light - walls[i].start;
+		glt::vec2f wallEnd = walls[i].end - walls[i].start;
+		glt::vec2f lightPos = light - walls[i].start;
 
 		// Project the light's position onto the wall
-		glm::vec2 wallDir = glm::normalize(wallEnd);
+		glt::vec2f wallDir = glt::normalize(wallEnd);
 
 		//  a.b = |a||b| cos 0 = |lightPos| cos 0
-		float proj = glm::dot(lightPos, wallDir);
+		float proj = glt::dot(lightPos, wallDir);
 
 		// Proj has to lie on wall
-		if (proj <= 0 || proj >= glm::length(wallEnd)) {
+		if (proj <= 0 || proj >= glt::length(wallEnd)) {
 			// Place in the middle of the others
 			farPerp = (farStart + farEnd) / 2.f;
 		}
 		else {
 			// Find the projected point on the wall
-			glm::vec2 perpPoint = walls[i].start + proj * wallDir;
+			glt::vec2f perpPoint = walls[i].start + proj * wallDir;
 
 			// Find perpendicular direction
-			glm::vec2 dPerp = glm::normalize(perpPoint - light);
+			glt::vec2f dPerp = glt::normalize(perpPoint - light);
 
 			// Find the far perpendicular point
 			farPerp = perpPoint + dPerp * shadowLength;

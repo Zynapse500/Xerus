@@ -9,7 +9,7 @@ namespace xr {
 	class BaseGame {
 
 		// The color to clear the window with
-		glm::vec4 clearColor;
+		glt::vec4f clearColor;
 
 		// The window the game is in
 		Window* window;

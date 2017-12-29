@@ -23,13 +23,10 @@ add_subdirectory("deps/glew/build/cmake")
 add_subdirectory("deps/glfw")
 add_subdirectory("deps/picopng")
 
+add_subdirectory("deps/glt")
+
 # Add include directory for GLEW
 include_directories("deps/glew/include")
-
-# Add include directory for GLM
-include_directories("deps/glm")
-
-
 
 
 # Options for Xerus
@@ -85,7 +82,7 @@ set(XERUS_HEADER_FILES
 add_library(xerus ${XERUS_SOURCE_FILES} ${XERUS_HEADER_FILES})
 
 
-target_link_libraries(xerus picopng glew_s glfw ${GLFW_LIBRARIES})
+target_link_libraries(xerus picopng glt glew_s glfw ${GLFW_LIBRARIES})
 target_include_directories(xerus PUBLIC "include")
 
 

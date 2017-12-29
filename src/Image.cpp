@@ -98,7 +98,7 @@ xr::ImageFormat xr::Image::getFormatFromBytes(unsigned char * data, size_t size)
 
 std::vector<xr::ImageRegion> xr::stitchImages(Image& result, std::vector<const Image*> images)
 {
-	typedef std::pair<int, glm::ivec2> IndexPair;
+	typedef std::pair<int, glt::vec2i> IndexPair;
 
 	std::vector<IndexPair> imageSizes;
 
@@ -109,7 +109,7 @@ std::vector<xr::ImageRegion> xr::stitchImages(Image& result, std::vector<const I
 		int w = images[i]->getWidth();
 		int h = images[i]->getHeight();
 
-		imageSizes.push_back(std::make_pair(i, glm::ivec2{ w, h }));
+		imageSizes.push_back(std::make_pair(i, glt::vec2i{ w, h }));
 		imagesArea += w * h;
 
 		if (w > maxWidth) maxWidth = w;
@@ -144,7 +144,7 @@ std::vector<xr::ImageRegion> xr::stitchImages(Image& result, std::vector<const I
 		
 		// Where all the images got or can be placed
 		std::vector<IndexPair> finalLocations;
-		std::vector<glm::ivec2> leftLocations = { {0, 0} };
+		std::vector<glt::vec2i> leftLocations = { {0, 0} };
 
 		// Could all images fit in the rectangle?
 		bool placedAll = true;
@@ -199,11 +199,11 @@ std::vector<xr::ImageRegion> xr::stitchImages(Image& result, std::vector<const I
 			leftLocations.erase(leftLocations.begin() + leftIndex);
 
 			// Add new available positions to place
-			leftLocations.push_back(finalLocation.second + glm::ivec2{ 0, pair.second.y });
-			leftLocations.push_back(finalLocation.second + glm::ivec2{ pair.second.x, 0 });
+			leftLocations.push_back(finalLocation.second + glt::vec2i{ 0, pair.second.y });
+			leftLocations.push_back(finalLocation.second + glt::vec2i{ pair.second.x, 0 });
 
 			// Prioritize positions to the left
-			std::sort(leftLocations.begin(), leftLocations.end(), [](glm::ivec2 a, glm::ivec2 b) {
+			std::sort(leftLocations.begin(), leftLocations.end(), [](glt::vec2i a, glt::vec2i b) {
 				return a.x < b.x;
 			});
 		}

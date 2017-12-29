@@ -2,52 +2,52 @@
 #include "Camera.h"
 
 
-xr::Camera::Camera(glm::mat4 projection, glm::vec3 position, glm::vec3 direction, glm::vec3 up) :
+xr::Camera::Camera(glt::mat4f projection, glt::vec3f position, glt::vec3f direction, glt::vec3f up) :
 	projection(projection),
 	position(position),
-	direction(glm::normalize(direction)),
+	direction(glt::normalize(direction)),
 	up(up),
-	view(glm::lookAt(position, position + direction, up))
+	view(glt::lookAt(position, position + direction, up))
 {
 }
 
-void xr::Camera::setPosition(glm::vec3 position)
+void xr::Camera::setPosition(glt::vec3f position)
 {
 	this->position = position;
 	updateView();
 }
 
-glm::vec3 xr::Camera::getPosition()
+glt::vec3f xr::Camera::getPosition()
 {
 	return this->position;
 }
 
-void xr::Camera::setDirection(glm::vec3 direction)
+void xr::Camera::setDirection(glt::vec3f direction)
 {
-	this->direction = glm::normalize(direction);
+	this->direction = glt::normalize(direction);
 	updateView();
 }
 
-glm::mat4 xr::Camera::getTransform() const
+glt::mat4f xr::Camera::getTransform() const
 {
 	return projection * view;
 }
 
-glm::vec3 xr::Camera::screenToWorld(glm::vec2 screen)
+glt::vec3f xr::Camera::screenToWorld(glt::vec2f screen)
 {
-	glm::vec4 screenExt = {screen, -1, 1};
+	glt::vec4f screenExt = {screen, -1, 1};
 
-	glm::mat4 inverse = glm::inverse(projection * view);
+	glt::mat4f inverse = glt::inverse(projection * view);
 
-	glm::vec4 projection = inverse * screenExt;
-	glm::vec3 result = glm::vec3(projection) / projection.w;
+	glt::vec4f projection = inverse * screenExt;
+	glt::vec3f result = glt::vec3f(projection) / projection.w;
 
 	return result;
 }
 
 void xr::Camera::updateView()
 {
-	view = glm::lookAt(position, position + direction, up);
+	view = glt::translate(glt::mat4f(), -position); // glt::lookAt(position, position + direction, up);
 }
 
 
@@ -62,12 +62,12 @@ xr::OrthographicCamera::OrthographicCamera(float width, float height) :
 }
 
 xr::OrthographicCamera::OrthographicCamera(float left, float right, float top, float bottom) :
-	Camera(glm::ortho(left, right, bottom, top), { 0, 0, 0 }, { 0, 0, -1 }, {0, 1, 0})
+	Camera(glt::orthographic(left, right, bottom, top), { 0, 0, 0 }, { 0, 0, -1 }, {0, 1, 0})
 {
 }
 
 void xr::OrthographicCamera::setProjection(float left, float right, float top, float bottom)
 {
-	this->projection = glm::ortho(left, right, bottom, top);
+	this->projection = glt::orthographic(left, right, bottom, top);
 }
 

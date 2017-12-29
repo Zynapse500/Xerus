@@ -45,10 +45,10 @@ public:
 	const float TILE_SIZE = 51;
 
 	// Convert mouse coordinates to tile coordinates
-	glm::ivec2 mouseToTile(glm::ivec2 mouse);
+	glt::vec2i mouseToTile(glt::vec2i mouse);
 
 	// Currently selected tile
-	glm::ivec2 selectedTile;
+	glt::vec2i selectedTile;
 
 
 	///////////////////////////
@@ -69,14 +69,14 @@ public:
 
 	// Compare two tiles, for use in maps
 	struct Compivec2 {
-		bool operator()(const glm::ivec2& lhs, const glm::ivec2& rhs) const {
+		bool operator()(const glt::vec2i& lhs, const glt::vec2i& rhs) const {
 			return lhs.x < rhs.x || lhs.x == rhs.x && lhs.y < rhs.y;
 		}
 	};
 
 
 	// Map of all blocks
-	std::map<glm::ivec2, Block, Compivec2> blocks;
+	std::map<glt::vec2i, Block, Compivec2> blocks;
 
 	// Draw all blocks
 	void drawBlocks(RenderBatch& batch);
@@ -89,10 +89,10 @@ public:
 	///////////////////////////
 
 	// Selection
-	glm::ivec2* selectionStart;
+	glt::vec2i* selectionStart;
 
 	// Return list of tiles in selection
-	std::vector<glm::ivec2> getSelectionTiles(glm::ivec2 start, glm::ivec2 end);
+	std::vector<glt::vec2i> getSelectionTiles(glt::vec2i start, glt::vec2i end);
 
 
 
@@ -101,9 +101,9 @@ public:
 	///////////////////////////
 
 	struct Wall {
-		glm::vec2 start, end;
+		glt::vec2f start, end;
 
-		Wall(glm::vec2 start, glm::vec2 end) :
+		Wall(glt::vec2f start, glt::vec2f end) :
 			start(start), end(end) {}
 	};
 
@@ -111,7 +111,7 @@ public:
 	std::vector<Wall> walls;
 
 	// Generate walls from blocks
-	std::vector <Wall> generateWalls(const std::map<glm::ivec2, Block, Compivec2>& blocks);
+	std::vector <Wall> generateWalls(const std::map<glt::vec2i, Block, Compivec2>& blocks);
 
 	// Draw all walls
 	void drawWalls(RenderBatch& batch);
@@ -129,7 +129,7 @@ public:
 	float shadowDarkness = 0.1;
 
 	// Draw shadows
-	void drawShadows(glm::vec2 light, float shadowLength, RenderBatch& batch);
+	void drawShadows(glt::vec2f light, float shadowLength, RenderBatch& batch);
 
 
 

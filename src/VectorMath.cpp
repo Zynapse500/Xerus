@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "VectorMath.h"
 
-glm::vec2 xr::rotate(glm::vec2 vec, float angle)
+glt::vec2f xr::rotate(glt::vec2f vec, float angle)
 {
-	float cs = cos(angle);
-	float sn = sin(angle);
+	float cs = cosf(angle);
+	float sn = sinf(angle);
 
 	return {
 		vec.x * cs - vec.y * sn,
