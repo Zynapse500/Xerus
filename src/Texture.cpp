@@ -59,6 +59,13 @@ bool xr::Texture::operator!=(const Texture & other) const
 	return !(*this == other);
 }
 
+
+xr::TextureRegion::TextureRegion() :
+	region(0, 0, 0, 0)
+{
+}
+
+
 xr::TextureRegion::TextureRegion(const ImageRegion & region, const Texture & texture)
 	: region((float)region.x / region.parentWidth,
 			 (float)region.y / region.parentHeight,
@@ -77,3 +84,4 @@ xr::Texture xr::TextureRegion::getTexture() const
 {
 	return this->texture;
 }
+

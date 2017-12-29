@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 
 #include "RenderBatch.h"
 
@@ -33,7 +34,7 @@ namespace xr {
 
     public:
 
-        void renderText(std::string text, glt::vec2f position, RenderBatch *batch) const;
+        void renderText(std::string text, glt::vec2f position, RenderBatch *batch);
 
     private:
 

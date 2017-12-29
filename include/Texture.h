@@ -53,6 +53,9 @@ namespace xr {
 
 	public:
 
+		// Empty texture region
+		TextureRegion();
+
 		// Convert from image region
 		TextureRegion(const ImageRegion& region, const Texture& texture);
 

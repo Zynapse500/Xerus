@@ -1,0 +1,9 @@
+[submodule "deps/glt"]
+	path = deps/glt
+	url = https://github.com/Zynapse500/glt
+[submodule "deps/glfw"]
+	path = deps/glfw
+	url = https://github.com/glfw/glfw
+[submodule "deps/glew"]
+	path = deps/glew
+	url = https://github.com/Perlmint/glew-cmake

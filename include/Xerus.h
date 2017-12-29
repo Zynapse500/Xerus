@@ -11,12 +11,15 @@
 #include "Texture.h"
 #include "Image.h"
 
+#include "BitmapFont.h"
+
 #include "VectorMath.h"
 #include "Camera.h"
 
 
 
 #include "BaseGame.h"
+
 
 
 namespace xr {
