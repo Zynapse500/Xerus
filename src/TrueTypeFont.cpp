@@ -12,7 +12,7 @@ xr::TrueTypeFont::TrueTypeFont() {
     initFreetype();
 }
 
-xr::TrueTypeFont::TrueTypeFont(const char *path, int size) :
+xr::TrueTypeFont::TrueTypeFont(const char *path, int size, bool flipVertically) :
     TrueTypeFont()
 {
     face = loadFace(path);
@@ -21,7 +21,7 @@ xr::TrueTypeFont::TrueTypeFont(const char *path, int size) :
     std::vector<char> characters;
     for (char c = ' '; c <= '~'; ++c) { characters.push_back(c); }
 
-    generateBitmapFont(face, characters);
+    generateBitmapFont(face, characters, flipVertically);
 }
 
 void xr::TrueTypeFont::initFreetype() {
@@ -58,11 +58,13 @@ void xr::TrueTypeFont::setFaceSize(ft::FT_Face &face, int size) {
     }
 }
 
-void xr::TrueTypeFont::generateBitmapFont(ft::FT_Face &face, const std::vector<char> &characters) {
+void
+xr::TrueTypeFont::generateBitmapFont(ft::FT_Face &face, const std::vector<char> &characterCodes, bool flipVertically) {
 
+    std::vector<Character> characters;
     std::vector<Image> images;
 
-    for (auto &&charCode : characters) {
+    for (auto &&charCode : characterCodes) {
         auto glyphIndex = ft::FT_Get_Char_Index(face, (ft::FT_ULong) charCode);
 
         ft::FT_Error error = ft::FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT);
@@ -95,7 +97,7 @@ void xr::TrueTypeFont::generateBitmapFont(ft::FT_Face &face, const std::vector<c
         }
 
         // Create image
-        Image image {bitmap, w, h};
+        images.emplace_back(bitmap, w, h);
 
         // Construct character
         Character character{};
@@ -104,13 +106,24 @@ void xr::TrueTypeFont::generateBitmapFont(ft::FT_Face &face, const std::vector<c
 
         character.advance = slot->advance.x / 64.f;
         character.offset.x = slot->metrics.horiBearingX / 64.f;
-        character.offset.y = -slot->metrics.horiBearingY / 64.f;
+        character.offset.y = slot->metrics.horiBearingY / 64.f;
 
-        character.region = TextureRegion{ImageRegion{0, h, w, -h, w, h}, Texture{image}};
-
-        this->registerCharacter(charCode, character);
+        characters.push_back(character);
     }
 
+    Image atlas;
+    std::vector<ImageRegion> regions = stitchImages(atlas, images);
 
+    Texture texture {atlas};
+
+    for (int i = 0; i < regions.size(); ++i) {
+        if (flipVertically) {
+            regions[i].y += regions[i].height;
+            regions[i].height *= -1;
+        }
+
+        characters[i].region = TextureRegion(regions[i], texture);
+        this->registerCharacter(characterCodes[i], characters[i]);
+    }
 }
 

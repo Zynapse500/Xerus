@@ -62,22 +62,29 @@ void xr::Renderer::clear(float r, float g, float b, float a)
 
 void xr::Renderer::submit(const RenderBatch & batch)
 {
-	this->vertexBuffer.upload(batch.meshBuffer.vertices);
-	this->vertexBuffer.upload(batch.meshBuffer.indices);
-
+	// Use shader
 	this->shader.use();
 
+	// Upload transformation
+	glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, batch.transformation.data);
+
+	// Apply filters
 	glUniform4f(this->uniformLocations.colorFilter, colorFilter.r, colorFilter.g, colorFilter.b, colorFilter.a);
 
+	// Draw texture batches
 	for (auto& texturePair : batch.textureBatches) {
+		// Bind texture
 		texturePair.first.bind();
-		for (auto& transBatch: texturePair.second.transBatches) {
-			glUniformMatrix4fv(this->uniformLocations.cameraMatrix, 1, 0, transBatch.transformation.data);
 
-			auto& range = transBatch.indexRange;
-			this->vertexBuffer.drawElements(static_cast<GLuint>(range.upper - range.lower),
-											static_cast<GLuint>(range.lower));
-		}
+		// Get texture data
+		const RenderBatch::TextureBatch& textureBatch = texturePair.second;
+
+		// Upload mesh data
+		this->vertexBuffer.upload(textureBatch.mesh.vertices);
+		this->vertexBuffer.upload(textureBatch.mesh.indices);
+
+		// Draw vertices
+		this->vertexBuffer.drawElements(textureBatch.mesh.indices.size(), 0);
 	}
 }
 

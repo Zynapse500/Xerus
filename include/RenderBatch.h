@@ -12,36 +12,20 @@ namespace xr {
 		friend class Renderer;
 
 
-
-		struct TransformationBatch {
-			glt::mat4f transformation;
-
-			Range<int> indexRange;
-
-			TransformationBatch(glt::mat4f transformation) :
-				transformation(transformation) {}
-		};
-
 		struct TextureBatch {
-			std::vector<TransformationBatch> transBatches;
+            // Vertices and indices to draw
+			Mesh mesh;
 		};
 
 
-		// List of meshes
-		Mesh meshBuffer;
-
-
-		// Pointer to the current index range
-		Range<int>* currentIndexRange;
-
-		// Texture batches
-		std::map<Texture, TextureBatch> textureBatches;
+        // Texture batches
+        std::map<Texture, TextureBatch> textureBatches;
 
 		// Current fill color
 		glt::vec4f fillColor;
 
 		// Current transformation matrix
-		glt::mat4f currentTransformation;
+		glt::mat4f transformation;
 
 		// Current texture batch
 		TextureBatch* currentTextureBatch;
@@ -58,8 +42,9 @@ namespace xr {
 		RenderBatch();
 
 
-		// Clear all buffered commands, including capacity
-		void clear();
+		// Start a new drawing session
+        void begin(const glt::mat4f& transformation);
+        void begin(const Camera& camera);
 
 
 		// Set the fill color
@@ -67,11 +52,6 @@ namespace xr {
 		void setFillColor(glt::vec3f color) { setFillColor(color.x, color.y, color.z); }
 		void setFillColor(float r, float g, float b, float a = 1.0) { setFillColor({ r, g, b, a }); }
 		void setFillColor(float g, float a = 1.0) { setFillColor({ g, g, g, a }); }
-
-
-		// Set the camera matrix
-		void setCamera(const glt::mat4f& cameraMatrix);
-		void setCamera(const Camera& camera);
 
 
 		// Sets the current texture
@@ -112,6 +92,9 @@ namespace xr {
 		void fillTriangles(const std::vector<glt::vec2f>& points);
 
 	private:
+
+        // Returns the mesh currently being rendered to
+        Mesh& getCurrentMesh();
 
 	};
 

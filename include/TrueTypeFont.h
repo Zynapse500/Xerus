@@ -29,7 +29,7 @@ namespace xr {
 
 
         // Load a new font from specified path
-        TrueTypeFont(const char* path, int size);
+        TrueTypeFont(const char* path, int size, bool flipVertically = false);
 
 
     private:
@@ -48,6 +48,6 @@ namespace xr {
 
 
         // Generates a bitmap font from a face
-        void generateBitmapFont(ft::FT_Face& face, const std::vector<char>& characters);
+        void generateBitmapFont(ft::FT_Face &face, const std::vector<char> &characterCodes, bool flipVertically = false);
     };
 }

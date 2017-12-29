@@ -9,7 +9,7 @@ void LevelEditor::setup()
 	selectionStart = nullptr;
 
 
-	font = TrueTypeFont{"D:/Code/Xerus/examples/Level Editor/res/arial.ttf", 42};
+	font = TrueTypeFont{"D:/Code/Xerus/examples/Level Editor/res/arial.ttf", 24, false};
 }
 
 void LevelEditor::update()
@@ -27,12 +27,8 @@ void LevelEditor::update()
 
 void LevelEditor::render(Renderer & renderer)
 {
-	batch.clear();
-	batch.setCamera(camera);
-
-	shadowBatch.clear();
-	shadowBatch.setCamera(camera);
-
+	batch.begin(camera);
+    shadowBatch.begin(camera);
 
 	// Draw background
 	batch.setFillColor(1, 0.4, 0.1);
@@ -100,13 +96,11 @@ void LevelEditor::render(Renderer & renderer)
 
 
     // Draw text
-    batch.clear();
-
-    glt::mat4f ortho = glt::orthographic(0.f, w, h, 0.f);
-    batch.setCamera(ortho);
+    glt::mat4f ortho = glt::orthographic(0.f, w, 0.f, h);
+    batch.begin(ortho);
 
     font.renderText("FPS:" + std::to_string(frameRate), {10, 42}, &batch);
-    font.renderText("ABCDEFGHIJKLMNOPQRSTUVXYZ", {100, 100}, &batch);
+    font.renderText("abcdefghijklmnopqrstuvxyz", {100, 100}, &batch);
 
     renderer.submit(batch);
 }

@@ -12,17 +12,18 @@ xr::RenderBatch::RenderBatch() :
 	this->clearTexture();
 }
 
-void xr::RenderBatch::clear()
-{
-	this->textureBatches.clear();
+void xr::RenderBatch::begin(const glt::mat4f &transformation) {
+    // TODO: Keep capacity of meshes
+    this->textureBatches.clear();
 
-	this->meshBuffer.vertices.clear();
-	this->meshBuffer.indices.clear();
-	
-	this->currentTransformation = glt::mat4f();
-	this->fillColor = { 1.0, 1.0, 1.0, 1.0 };
+    this->transformation = transformation;
+    this->fillColor = { 1.0, 1.0, 1.0, 1.0 };
 
-	this->clearTexture();
+    this->clearTexture();
+}
+
+void xr::RenderBatch::begin(const xr::Camera &camera) {
+    begin(camera.getTransform());
 }
 
 void xr::RenderBatch::setFillColor(glt::vec4f color)
@@ -30,41 +31,10 @@ void xr::RenderBatch::setFillColor(glt::vec4f color)
 	this->fillColor = color;
 }
 
-void xr::RenderBatch::setCamera(const Camera & camera)
-{
-	this->setCamera(camera.getTransform());
-}
-
-void xr::RenderBatch::setCamera(const glt::mat4f & cameraMatrix)
-{
-	this->currentTransformation = cameraMatrix;
-
-	this->currentTextureBatch->transBatches.emplace_back(currentTransformation);
-	this->currentIndexRange = &this->currentTextureBatch->transBatches.back().indexRange;
-	this->currentIndexRange->lower = this->currentIndexRange->upper = this->meshBuffer.indices.size();
-}
-
 void xr::RenderBatch::setTexture(const Texture & texture, const Rectangle<float>& region)
 {
-	this->currentTextureRegion = region;
-
-	TextureBatch& textureBatch = this->textureBatches[texture];
-
-
-    if (this->currentTextureBatch == &textureBatch) {
-		return;
-	} else {
-		this->currentTextureBatch = &textureBatch;
-	}
-
-	// Add a new Transformation batch if this is a new texture or
-	// the matrix has changed since last time this texture was used
-	if (textureBatch.transBatches.empty() ||
-		textureBatch.transBatches.back().transformation != currentTransformation) {
-		this->setCamera(currentTransformation);
-	}
-
-    this->currentIndexRange = &textureBatch.transBatches.back().indexRange;
+    currentTextureBatch = & textureBatches[texture];
+    currentTextureRegion = region;
 }
 
 void xr::RenderBatch::setTexture(const TextureRegion & region)
@@ -80,30 +50,29 @@ void xr::RenderBatch::clearTexture()
 
 void xr::RenderBatch::fillRect(float x, float y, float w, float h)
 {
+    Mesh& currentMesh = getCurrentMesh();
+
 	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->meshBuffer.vertices.size();
+	int startIndex = currentMesh.vertices.size();
 
 	// Add indices to all vertices
-	this->meshBuffer.indices.emplace_back(0 + startIndex);
-	this->meshBuffer.indices.emplace_back(1 + startIndex);
-	this->meshBuffer.indices.emplace_back(2 + startIndex);
-	this->meshBuffer.indices.emplace_back(2 + startIndex);
-	this->meshBuffer.indices.emplace_back(3 + startIndex);
-	this->meshBuffer.indices.emplace_back(0 + startIndex);
+	currentMesh.indices.emplace_back(0 + startIndex);
+	currentMesh.indices.emplace_back(1 + startIndex);
+	currentMesh.indices.emplace_back(2 + startIndex);
+	currentMesh.indices.emplace_back(2 + startIndex);
+	currentMesh.indices.emplace_back(3 + startIndex);
+	currentMesh.indices.emplace_back(0 + startIndex);
 
-	// Increase index range
-	this->currentIndexRange->upper += 6;
-	
-	// Provide alias for 'currentTextureRegion'
+    // Provide alias for 'currentTextureRegion'
 	auto& r = this->currentTextureRegion;
 
 	float z = 0;
 
 	// Add vertices
-	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x, y, z }, glt::vec2f{ r.x, r.y + r.height }, this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x, y + h, z }, glt::vec2f{ r.x, r.y }, this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x + w, y + h, z }, glt::vec2f{ r.x + r.width, r.y }, this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f{ x + w, y, z }, glt::vec2f{ r.x + r.width, r.y + r.height }, this->fillColor);
+	currentMesh.vertices.emplace_back(glt::vec3f{ x, y, z }, glt::vec2f{ r.x, r.y + r.height }, this->fillColor);
+	currentMesh.vertices.emplace_back(glt::vec3f{ x, y + h, z }, glt::vec2f{ r.x, r.y }, this->fillColor);
+	currentMesh.vertices.emplace_back(glt::vec3f{ x + w, y + h, z }, glt::vec2f{ r.x + r.width, r.y }, this->fillColor);
+	currentMesh.vertices.emplace_back(glt::vec3f{ x + w, y, z }, glt::vec2f{ r.x + r.width, r.y + r.height }, this->fillColor);
 }
 
 
@@ -126,13 +95,15 @@ ALGORITHM:
 
 void xr::RenderBatch::fillPolygon(const std::vector<glt::vec2f>& points)
 {
-	int pointCount = points.size();
+    Mesh& currentMesh = getCurrentMesh();
+
+    int pointCount = points.size();
 
 	if (pointCount < 3) {
 		return;
 	}
 
-#define IND(index) ((index + pointCount) % pointCount)
+#define IND(index) (((index) + pointCount) % pointCount)
 
 	auto getPoint = [&](int index) {
 		return points[IND(index)];
@@ -180,7 +151,7 @@ void xr::RenderBatch::fillPolygon(const std::vector<glt::vec2f>& points)
 	// Add vertices
 	for (int i = 0; i < pointCount; i++)
 	{
-		this->meshBuffer.vertices.emplace_back(glt::vec3f(getPoint(i), 0), glt::vec2f{ 0, 0 }, this->fillColor);
+		currentMesh.vertices.emplace_back(glt::vec3f(getPoint(i), 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	}
 
 	// Number of triangles left to construct
@@ -200,12 +171,9 @@ void xr::RenderBatch::fillPolygon(const std::vector<glt::vec2f>& points)
 		}
 		else {
 			// Add triangle
-			this->meshBuffer.indices.emplace_back(centroid);
-			this->meshBuffer.indices.emplace_back(pointIndex);
-			this->meshBuffer.indices.emplace_back(IND(pointIndex + 1));
-
-			// Increase index range
-			this->currentIndexRange->upper += 3;
+			currentMesh.indices.emplace_back(centroid);
+			currentMesh.indices.emplace_back(pointIndex);
+			currentMesh.indices.emplace_back(IND(pointIndex + 1));
 
 			// Triangle is done
 			trianglesLeft--;
@@ -218,50 +186,51 @@ void xr::RenderBatch::fillPolygon(const std::vector<glt::vec2f>& points)
 
 void xr::RenderBatch::fillTriangleFan(const std::vector<glt::vec2f>& points)
 {
-	int pointCount = points.size();
+    Mesh& currentMesh = getCurrentMesh();
+
+
+    int pointCount = points.size();
 
 
 	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->meshBuffer.vertices.size();
+	int startIndex = currentMesh.vertices.size();
 
 
 	// Add vertices
 	for (int i = 0; i < pointCount; i++) {
-		this->meshBuffer.vertices.emplace_back(glt::vec3f(points[i], 0), glt::vec2f{ 0, 0 }, this->fillColor);
+		currentMesh.vertices.emplace_back(glt::vec3f(points[i], 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	}
 
 	// Add indices
 	for (int i = 1; i < pointCount - 1; i++) {
-		this->meshBuffer.indices.emplace_back(startIndex + 0);
-		this->meshBuffer.indices.emplace_back(startIndex + i);
-		this->meshBuffer.indices.emplace_back(startIndex + i + 1);
-		
-		this->currentIndexRange->upper += 3;
+		currentMesh.indices.emplace_back(startIndex + 0);
+		currentMesh.indices.emplace_back(startIndex + i);
+		currentMesh.indices.emplace_back(startIndex + i + 1);
 	}
 }
 
 void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 {
-	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->meshBuffer.vertices.size();
+    Mesh& currentMesh = getCurrentMesh();
+
+    // Get the index of the last vertex and start indexing from there
+	int startIndex = currentMesh.vertices.size();
 
 	// Add vertices
-	this->meshBuffer.vertices.reserve(startIndex + segments + 1);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f(x, y, 0), glt::vec2f{ 0, 0 }, this->fillColor);
+	currentMesh.vertices.reserve(static_cast<unsigned int>(startIndex + segments + 1));
+	currentMesh.vertices.emplace_back(glt::vec3f(x, y, 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	for (int i = 0; i < segments; i++)
 	{
-		float dx = r * cos(2 * float(PI) * i / float(segments));
-		float dy = r * sin(2 * float(PI) * i / float(segments));
-		this->meshBuffer.vertices.emplace_back(glt::vec3f(x + dx, y + dy, 0), glt::vec2f{ 0, 0 }, this->fillColor);
+		float dx = r * cosf(2 * float(PI) * i / float(segments));
+		float dy = r * sinf(2 * float(PI) * i / float(segments));
+		currentMesh.vertices.emplace_back(glt::vec3f(x + dx, y + dy, 0), glt::vec2f{ 0, 0 }, this->fillColor);
 	}
 
-	this->meshBuffer.indices.reserve(this->meshBuffer.indices.size() + segments * 3);
+	currentMesh.indices.reserve(currentMesh.indices.size() + segments * 3);
 	for (int i = 0; i < segments; i++) {
-		this->meshBuffer.indices.emplace_back(startIndex + 0);
-		this->meshBuffer.indices.emplace_back(startIndex + i + 1);
-		this->meshBuffer.indices.emplace_back(startIndex + 1 + (i + 1) % segments);
-
-		this->currentIndexRange->upper += 3;
+		currentMesh.indices.emplace_back(startIndex + 0);
+		currentMesh.indices.emplace_back(startIndex + i + 1);
+		currentMesh.indices.emplace_back(startIndex + 1 + (i + 1) % segments);
 	}
 }
 
@@ -269,7 +238,9 @@ void xr::RenderBatch::fillCircle(float x, float y, float r, int segments)
 
 void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1, float width)
 {
-	// Find the direction of the line
+    Mesh& currentMesh = getCurrentMesh();
+
+    // Find the direction of the line
 	glt::vec2f dir = glt::normalize(glt::vec2f{ x1 - x0, y1 - y0 });
 
 	// Find the perpendicular line
@@ -283,40 +254,45 @@ void xr::RenderBatch::drawLine(float x0, float y0, float x1, float y1, float wid
 
 	
 	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->meshBuffer.vertices.size();
+	int startIndex = currentMesh.vertices.size();
 
 	// Add vertices
 
 	Vertex va {glt::vec3f{a}, glt::vec2f{0}, this->fillColor};
 
-	this->meshBuffer.vertices.push_back(va);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f(b, 0), glt::vec2f(0), this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f(c, 0), glt::vec2f(0), this->fillColor);
-	this->meshBuffer.vertices.emplace_back(glt::vec3f(d, 0), glt::vec2f(0), this->fillColor);
+	currentMesh.vertices.push_back(va);
+	currentMesh.vertices.emplace_back(glt::vec3f(b, 0), glt::vec2f(0), this->fillColor);
+	currentMesh.vertices.emplace_back(glt::vec3f(c, 0), glt::vec2f(0), this->fillColor);
+	currentMesh.vertices.emplace_back(glt::vec3f(d, 0), glt::vec2f(0), this->fillColor);
 
-	this->meshBuffer.indices.emplace_back(startIndex);
-	this->meshBuffer.indices.emplace_back(startIndex + 1);
-	this->meshBuffer.indices.emplace_back(startIndex + 2);
-	this->meshBuffer.indices.emplace_back(startIndex + 2);
-	this->meshBuffer.indices.emplace_back(startIndex + 3);
-	this->meshBuffer.indices.emplace_back(startIndex + 1);
-
-	this->currentIndexRange->upper += 6;
+	currentMesh.indices.emplace_back(startIndex);
+	currentMesh.indices.emplace_back(startIndex + 1);
+	currentMesh.indices.emplace_back(startIndex + 2);
+	currentMesh.indices.emplace_back(startIndex + 2);
+	currentMesh.indices.emplace_back(startIndex + 3);
+	currentMesh.indices.emplace_back(startIndex + 1);
 }
 
 
 void xr::RenderBatch::fillTriangles(const std::vector<glt::vec2f>& points) 
 {
-	// Get the index of the last vertex and start indexing from there
-	int startIndex = this->meshBuffer.vertices.size();
+    Mesh& currentMesh = getCurrentMesh();
+
+    // Get the index of the last vertex and start indexing from there
+	int startIndex = currentMesh.vertices.size();
 
 	for (auto& point : points)
 	{
-		this->meshBuffer.vertices.emplace_back(glt::vec3f(point, 0), glt::vec2f{ 0, 0 }, this->fillColor);
-		this->meshBuffer.indices.emplace_back(startIndex);
+		currentMesh.vertices.emplace_back(glt::vec3f(point, 0), glt::vec2f{ 0, 0 }, this->fillColor);
+		currentMesh.indices.emplace_back(startIndex);
 		startIndex++;
-
-		this->currentIndexRange->upper++;
 	}
 }
+
+xr::Mesh &xr::RenderBatch::getCurrentMesh() {
+    return currentTextureBatch->mesh;
+}
+
+
+
 
