@@ -96,7 +96,19 @@ xr::ImageFormat xr::Image::getFormatFromBytes(unsigned char * data, size_t size)
 	return DONT_KNOW;
 }
 
-std::vector<xr::ImageRegion> xr::stitchImages(Image& result, std::vector<const Image*> images)
+xr::Image::Image(const std::vector<unsigned char> &data, int width, int height) :
+        pixels(data), width(static_cast<unsigned long>(width)), height(static_cast<unsigned long>(height))
+{
+}
+
+xr::Image::Image(unsigned char *data, int width, int height) :
+        width(static_cast<unsigned long>(width)), height(static_cast<unsigned long>(height)) {
+    this->pixels.resize(this->width * this->height * 4);
+
+    memcpy(pixels.data(), data, this->width * this->height * 4);
+}
+
+std::vector<xr::ImageRegion> xr::stitchImages(Image& result, const std::vector<const Image*>& images)
 {
 	typedef std::pair<int, glt::vec2i> IndexPair;
 
@@ -268,4 +280,16 @@ std::vector<xr::ImageRegion> xr::stitchImages(Image& result, std::vector<const I
 	}
 
 	return std::move(regions);
+}
+
+std::vector<xr::ImageRegion> xr::stitchImages(xr::Image &result, const std::vector<xr::Image> &images) {
+
+	std::vector<const Image*> newImages;
+
+    int imageCount = images.size();
+    for (int i = 0; i < imageCount; ++i) {
+        newImages.push_back(&images[i]);
+    }
+
+	return stitchImages(result, newImages);
 }

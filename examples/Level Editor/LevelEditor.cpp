@@ -7,10 +7,22 @@ void LevelEditor::setup()
 	getWindow().setVerticalSync(false);
 
 	selectionStart = nullptr;
+
+
+	font = TrueTypeFont{"D:/Code/Xerus/examples/Level Editor/res/arial.ttf", 42};
 }
 
 void LevelEditor::update()
 {
+    static double elapsedTime = 0;
+    static int frames = 0;
+    elapsedTime += getWindow().getLastFrameTime();
+    frames++;
+
+    if (elapsedTime > 0.5) {
+        this->frameRate = static_cast<int>(round(frames / elapsedTime));
+        frames = 0; elapsedTime = 0;
+    }
 }
 
 void LevelEditor::render(Renderer & renderer)
@@ -82,6 +94,21 @@ void LevelEditor::render(Renderer & renderer)
 	glStencilFunc(GL_NOTEQUAL, 1, 0xff);
 
 	renderer.submit(batch);
+
+    glStencilFunc(GL_ALWAYS, 0, 0xff);
+
+
+
+    // Draw text
+    batch.clear();
+
+    glt::mat4f ortho = glt::orthographic(0.f, w, h, 0.f);
+    batch.setCamera(ortho);
+
+    font.renderText("FPS:" + std::to_string(frameRate), {10, 42}, &batch);
+    font.renderText("ABCDEFGHIJKLMNOPQRSTUVXYZ", {100, 100}, &batch);
+
+    renderer.submit(batch);
 }
 
 void LevelEditor::keyPressed(int key)
@@ -161,7 +188,7 @@ void LevelEditor::mouseMoved(int x, int y)
 
 	if (getWindow().getMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
 		glt::vec2f cameraDelta = camera.screenToWorld(getWindow().windowToScreen(lastMousePosition)) -
-				camera.screenToWorld(getWindow().windowToScreen({x, y}));
+				camera.screenToWorld(getWindow().windowToScreen({float(x), float(y)}));
 		camera.setPosition(glt::vec2f(camera.getPosition()) + cameraDelta);
     }
 	selectedTile = mouseToTile({ x, y });

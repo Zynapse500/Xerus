@@ -12,6 +12,7 @@
 #include "Image.h"
 
 #include "BitmapFont.h"
+#include "TrueTypeFont.h"
 
 #include "VectorMath.h"
 #include "Camera.h"

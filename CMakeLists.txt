@@ -18,15 +18,24 @@ SET_OPTION(GLFW_BUILD_EXAMPLES OFF)
 SET_OPTION(GLFW_BUILD_TESTS OFF)
 SET_OPTION(GLFW_INSTALL OFF)
 
+# Freetype options
+SET_OPTION(WITH_ZLIB OFF)
+SET_OPTION(WITH_BZip2 OFF)
+SET_OPTION(WITH_PNG OFF)
+SET_OPTION(WITH_HarfBuzz OFF)
+
 # Add dependencies
 add_subdirectory("deps/glew/build/cmake")
 add_subdirectory("deps/glfw")
 add_subdirectory("deps/picopng")
 
+add_subdirectory("deps/freetype2")
+
 add_subdirectory("deps/glt")
 
-# Add include directory for GLEW
+# Add include directory for GLEW and freetype
 include_directories("deps/glew/include")
+include_directories("deps/freetype2/include")
 
 
 # Options for Xerus
@@ -53,7 +62,7 @@ set(XERUS_SOURCE_FILES
         src/VectorMath.cpp
         src/Vertex.cpp
         src/Window.cpp
-        src/BitmapFont.cpp)
+        src/BitmapFont.cpp src/TrueTypeFont.cpp)
 
 # Set header files
 set(XERUS_HEADER_FILES
@@ -76,13 +85,13 @@ set(XERUS_HEADER_FILES
         include/Vertex.h
         include/Window.h
         include/Xerus.h
-        include/BitmapFont.h)
+        include/BitmapFont.h include/TrueTypeFont.h)
 
 # Create the library
 add_library(xerus ${XERUS_SOURCE_FILES} ${XERUS_HEADER_FILES})
 
 
-target_link_libraries(xerus picopng glt glew_s glfw ${GLFW_LIBRARIES})
+target_link_libraries(xerus freetype picopng glt glew_s glfw ${GLFW_LIBRARIES})
 target_include_directories(xerus PUBLIC "include")
 
 

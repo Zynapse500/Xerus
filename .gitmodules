@@ -7,3 +7,6 @@
 [submodule "deps/glew"]
 	path = deps/glew
 	url = https://github.com/Perlmint/glew-cmake
+[submodule "deps/freetype2"]
+	path = deps/freetype2
+	url = git://git.sv.nongnu.org/freetype/freetype2.git

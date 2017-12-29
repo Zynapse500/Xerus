@@ -17,12 +17,12 @@ void xr::BitmapFont::renderText(std::string text, glt::vec2f position, xr::Rende
         auto it = characters.find(ch);
 
         if (it != characters.end()) {
-            Character character = it->second;
+            const Character& character = it->second;
             batch->setTexture(character.region);
 
-            batch->fillRect(position, character.size);
+            batch->fillRect(position + character.offset, character.size);
 
-            position.x += character.size.x;
+            position.x += character.advance;
         } else {
             std::cerr << "Font missing character: " << ch << std::endl;
         }

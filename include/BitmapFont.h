@@ -23,6 +23,12 @@ namespace xr {
             // Size of the character
             glt::vec2f size;
 
+            // Offset from character origin
+            glt::vec2f offset;
+
+            // How far along should the next character be?
+            float advance;
+
             bool operator<(const Character* other) const {
                 return this->region.getTexture() < other->region.getTexture();
             }

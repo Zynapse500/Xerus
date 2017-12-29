@@ -36,6 +36,10 @@ namespace xr {
 		// Decode image of specific type
 		Image(ImageFormat format, unsigned char* data, size_t dataSize);
 
+        // Construct from raw data
+        Image(const std::vector<unsigned char>& data, int width, int height);
+        Image(unsigned char* data, int width, int height);
+
 		// Load and decode image from a file
 		Image(const char* path);
 		
@@ -67,7 +71,8 @@ namespace xr {
 
 	// Stitches multiple images together into one
 	// Returns the location of each contained image
-	std::vector<ImageRegion> stitchImages(Image& result, std::vector<const Image*> images);
+	std::vector<ImageRegion> stitchImages(Image& result, const std::vector<const Image*>& images);
+	std::vector<ImageRegion> stitchImages(Image& result, const std::vector<Image>& images);
 
 }
 

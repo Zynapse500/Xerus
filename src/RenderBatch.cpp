@@ -50,20 +50,21 @@ void xr::RenderBatch::setTexture(const Texture & texture, const Rectangle<float>
 
 	TextureBatch& textureBatch = this->textureBatches[texture];
 
-	if (this->currentTextureBatch == &textureBatch) {
-		return;
-	}
 
-	this->currentTextureBatch = &textureBatch;
+    if (this->currentTextureBatch == &textureBatch) {
+		return;
+	} else {
+		this->currentTextureBatch = &textureBatch;
+	}
 
 	// Add a new Transformation batch if this is a new texture or
 	// the matrix has changed since last time this texture was used
-	if (textureBatch.transBatches.size() == 0 ||
+	if (textureBatch.transBatches.empty() ||
 		textureBatch.transBatches.back().transformation != currentTransformation) {
 		this->setCamera(currentTransformation);
 	}
 
-	this->currentIndexRange = &this->currentTextureBatch->transBatches.back().indexRange;
+    this->currentIndexRange = &textureBatch.transBatches.back().indexRange;
 }
 
 void xr::RenderBatch::setTexture(const TextureRegion & region)
