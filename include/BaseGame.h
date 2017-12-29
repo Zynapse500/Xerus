@@ -109,7 +109,7 @@ namespace xr {
 		game->setup();
 
 		// Tell the game the size of the window right now
-		game->windowResized(width, height);
+		game->windowResized(window->getWidth(), window->getHeight());
 
 		// Run the game for as long as the window is open
 		while (window->isOpen()) {

@@ -5,11 +5,12 @@ void LevelEditor::setup()
 {
 	setClearColor(0, 0.4f, 0.1f);
 	getWindow().setVerticalSync(false);
+    // getWindow().setFullscreen(true);
 
 	selectionStart = nullptr;
 
 
-	font = TrueTypeFont{"D:/Code/Xerus/examples/Level Editor/res/arial.ttf", 24, false};
+	font = TrueTypeFont{"D:/Code/Xerus/examples/Level Editor/res/arial.ttf", 12, true};
 }
 
 void LevelEditor::update()
@@ -96,11 +97,14 @@ void LevelEditor::render(Renderer & renderer)
 
 
     // Draw text
-    glt::mat4f ortho = glt::orthographic(0.f, w, 0.f, h);
+    glt::mat4f ortho = glt::orthographic(0.f, w, h, 0.0f);
     batch.begin(ortho);
 
-    font.renderText("FPS:" + std::to_string(frameRate), {10, 42}, &batch);
-    font.renderText("abcdefghijklmnopqrstuvxyz", {100, 100}, &batch);
+    batch.setFillColor(0);
+    font.renderText("FPS:" + std::to_string(frameRate), {11, 23}, &batch);
+
+    batch.setFillColor(1);
+    font.renderText("FPS:" + std::to_string(frameRate), {10, 22}, &batch);
 
     renderer.submit(batch);
 }
@@ -167,6 +171,8 @@ void LevelEditor::mouseReleased(int button, int x, int y)
 
 void LevelEditor::windowResized(int width, int height)
 {
+    printf("Resize: (%d, %d)\n", width, height);
+
 	this->w = width;
 	this->h = height;
 

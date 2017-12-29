@@ -102,11 +102,11 @@ xr::TrueTypeFont::generateBitmapFont(ft::FT_Face &face, const std::vector<char> 
         // Construct character
         Character character{};
         character.size.x = w;
-        character.size.y = h;
+        character.size.y = flipVertically ? h : -h;
 
         character.advance = slot->advance.x / 64.f;
         character.offset.x = slot->metrics.horiBearingX / 64.f;
-        character.offset.y = slot->metrics.horiBearingY / 64.f;
+        character.offset.y = (flipVertically ? -slot->metrics.horiBearingY : slot->metrics.horiBearingY) / 64.f;
 
         characters.push_back(character);
     }
@@ -117,10 +117,8 @@ xr::TrueTypeFont::generateBitmapFont(ft::FT_Face &face, const std::vector<char> 
     Texture texture {atlas};
 
     for (int i = 0; i < regions.size(); ++i) {
-        if (flipVertically) {
-            regions[i].y += regions[i].height;
-            regions[i].height *= -1;
-        }
+        regions[i].y += regions[i].height;
+        regions[i].height *= -1;
 
         characters[i].region = TextureRegion(regions[i], texture);
         this->registerCharacter(characterCodes[i], characters[i]);

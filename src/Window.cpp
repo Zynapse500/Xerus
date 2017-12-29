@@ -107,8 +107,10 @@ void xr::Window::setFullscreen(bool fullscreen)
 	}
 
 	glfwSetWindowMonitor(this->glfwHandle, monitor, x, y, width, height, GLFW_DONT_CARE);
+    glViewport(0, 0, width, height);
 
 	glfwSwapInterval(this->verticalSync);
+    this->size = { width, height };
 }
 
 void xr::Window::toggleFullscreen()
@@ -182,42 +184,31 @@ void xr::Window::create(int width, int height, const char * title, const WindowP
 
 	// Multisampling samples
 	glfwWindowHint(GLFW_SAMPLES, preferences.samples);
-	
-	// The monitor of the window
-	GLFWmonitor* monitor = nullptr;
 
-	// Fullscreen or not
-	if (preferences.fullscreen) {
-		// Get the main monitor
-		monitor = this->preferredMonitor;
+    GLFWmonitor* monitor = nullptr;
 
-		// Change the window size if necessary
-		if (preferences.overrideFullscrenSize) {
-			// Get the monitor resolution
-			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-			width = mode->width;
-			height = mode->height;
-		}
-	}
-	
+
+    if (preferences.fullscreen) {
+        monitor = this->preferredMonitor;
+        if (fullscreenUseMaxResolution) {
+            const GLFWvidmode* vidmode = glfwGetVideoMode(this->preferredMonitor);
+            width = vidmode->width;
+            height = vidmode->height;
+        }
+    }
+
+
+
 	this->glfwHandle = glfwCreateWindow(width, height, title, monitor, nullptr);
 
-	if (!glfwHandle) {
-		throw std::runtime_error("Failed to create GLFW window");
-	}
+    if (!glfwHandle) {
+        throw std::runtime_error("Failed to create GLFW window");
+    }
 
+    this->windows[this->glfwHandle] = this;
+    this->size = { width, height };
 
-	// Center window on monitor
-	int x, y;
-	const GLFWvidmode* mode = glfwGetVideoMode(this->preferredMonitor);
-	glfwGetMonitorPos(this->preferredMonitor, &x, &y);
-	x += (mode->width - width) / 2;
-	y += (mode->height - height) / 2;
-	glfwSetWindowPos(this->glfwHandle, x, y);
-
-
-	this->windows[this->glfwHandle] = this;
-	this->size = { width, height };
+    setFullscreen(preferences.fullscreen);
 }
 
 void xr::Window::loadGL()
@@ -232,9 +223,6 @@ void xr::Window::setup(WindowPreferences preferences)
 	this->windowCallbacks = preferences.callbacks;
 	this->setupCallbacks();
 
-	// Initialize callbacks
-	sizeCallback(this->glfwHandle, size.x, size.y);
-
 	// Vertical sync
 	glfwSwapInterval(preferences.vsync);
 	this->verticalSync = preferences.vsync;
@@ -247,18 +235,10 @@ void xr::Window::setup(WindowPreferences preferences)
 	// Enable depth culling
 	// glEnable(GL_DEPTH_TEST);
 
-	// Enable back face culling
-	/*
-	glFrontFace(GL_CCW);
-	glCullFace(GL_BACK);
-	glEnable(GL_CULL_FACE);
-	*/
-
 
 	// Enable transparency
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	// glAlphaFunc()
 }
 
 
